@@ -2,25 +2,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 ThisBuild / scalaVersion := "2.13.8"
 ThisBuild / githubWorkflowPublishTargetBranches := Nil
-
-ThisBuild / githubWorkflowAddedJobs ++= Seq(
-  WorkflowJob(
-    id = "e2e",
-    name = "E2E Tests",
-    steps =
-      githubWorkflowJobSetup.value.toList ++ List(
-        WorkflowStep.Sbt(commands = List("Docker/publishLocal")),
-        WorkflowStep.Run(
-          commands = List("docker-compose up -d", "sbt e2e/test")
-        ),
-        WorkflowStep.Run(
-          commands = List("docker-compose down"),
-          cond = Some("always()"),
-        ),
-      ),
-    scalas = List(scalaVersion.value),
-  )
-)
+ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("ci")))
 
 val commonSettings = Seq(
   organization := "com.kubukoz.jvs",
@@ -34,6 +16,8 @@ val commonSettings = Seq(
   ),
 )
 
+val E2EConfig = config("e2e").extend(Test)
+
 lazy val e2e = project
   .settings(
     commonSettings,
@@ -41,6 +25,12 @@ lazy val e2e = project
       "org.http4s" %% "http4s-ember-client" % "0.23.14",
       "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
     ),
+  )
+  .configs(E2EConfig)
+  .settings(
+    inConfig(E2EConfig)(
+      Defaults.testSettings ++ bloop.integrations.sbt.BloopDefaults.configSettings
+    )
   )
 
 val root = project
@@ -55,5 +45,10 @@ val root = project
       "org.http4s" %% "http4s-dsl" % "0.23.14",
       "org.http4s" %% "http4s-ember-server" % "0.23.14",
     ),
+    addCommandAlias(
+      "ci",
+      List("test", "Docker/publishLocal", "composeUp", "e2e/E2EConfig/test").mkString(";"),
+    ),
   )
   .enablePlugins(JavaAppPackaging, DockerPlugin)
+  .aggregate(e2e)
