@@ -84,7 +84,7 @@ object RouteTests extends SimpleIOSuite {
       .map(assert.eql(_, validSchema.some))
   }
 
-  test("Download schema: not found".only) {
+  test("Download schema: not found") {
     client
       .downloadSchema(nonExistentSchemaId)
       .map(assert.eql(_, None))
