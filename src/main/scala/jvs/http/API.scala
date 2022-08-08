@@ -38,7 +38,7 @@ object API {
         schemaId: SchemaId,
         schema: Json,
       ): F[ActionResult] = client.expect(
-        POST.apply(baseUrl / "schema" / schemaId.value).withEntity(schema)
+        POST(baseUrl / "schema" / schemaId.value).withEntity(schema)
       )
 
     }
