@@ -39,7 +39,10 @@ object HttpServer {
           .flatMap { schema =>
             api.uploadSchema(SchemaId(schemaId), schema)
           }
-          .flatMap(Created(_))
+          .flatMap {
+            case result if result.isSuccess => Created(result)
+            case result                     => UnprocessableEntity(result)
+          }
       }
       .orNotFound
       .pipe(JsonDebugErrorHandler[F, F](_))

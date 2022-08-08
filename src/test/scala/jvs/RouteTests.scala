@@ -5,10 +5,11 @@ import jvs.http.API
 import jvs.http.HttpServer
 import jvs.model.SchemaId
 import jvs.transport.ActionResult
+import jvs.transport.ActionStatus
 import org.http4s.Uri
 import org.http4s.client.Client
 import weaver._
-import jvs.transport.ActionStatus
+import org.http4s.Status
 
 object RouteTests extends SimpleIOSuite {
 
@@ -34,7 +35,10 @@ object RouteTests extends SimpleIOSuite {
 
     }
 
-  private val client = API.client(Client.fromHttpApp(HttpServer.routes[IO](fakeAPI)), Uri())
+  private val http4sClient = Client.fromHttpApp(HttpServer.routes[IO](fakeAPI))
+
+  private val client = API.client(http4sClient, Uri())
+  private val clientRaw = API.clientRaw[IO](Uri())
 
   test("Upload schema successfully") {
     client
@@ -52,5 +56,11 @@ object RouteTests extends SimpleIOSuite {
           uploadResult.status == ActionStatus.Error
         )
       }
+  }
+
+  test("Upload schema with error response: response has UnprocessableEntity status") {
+    http4sClient.status(clientRaw.uploadSchema(invalidSchemaId, "{")).map {
+      assert.eql(_, Status.UnprocessableEntity)
+    }
   }
 }
