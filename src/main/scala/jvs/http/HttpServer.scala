@@ -5,6 +5,7 @@ import cats.effect.Resource
 import cats.effect.kernel.Async
 import cats.implicits._
 import io.circe.Json
+import jvs.SchemaId
 import jvs.http.HttpConfig
 import org.http4s.HttpApp
 import org.http4s.HttpRoutes
@@ -31,12 +32,12 @@ object HttpServer {
     import dsl._
 
     HttpRoutes
-      .of[F] { case req @ (PUT -> Root / "schema" / UUIDVar(schemaId)) =>
+      .of[F] { case req @ (POST -> Root / "schema" / schemaId) =>
         req.decode[Json] { schema =>
           api
-            .uploadSchema(schemaId, schema) *> Accepted()
+            .uploadSchema(SchemaId(schemaId), schema)
+            .flatMap(Accepted(_))
         }
-
       }
       .orNotFound
       .pipe(JsonDebugErrorHandler[F, F](_))

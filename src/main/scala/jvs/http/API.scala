@@ -3,17 +3,17 @@ package jvs.http
 import cats.Applicative
 import cats.effect.Concurrent
 import io.circe.Json
-import org.http4s.EntityDecoder
+import jvs.SchemaId
 import org.http4s.Method._
 import org.http4s.Uri
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
-
-import java.util.UUID
+import jvs.ActionResult
+import jvs.ActionStatus
 
 trait API[F[_]] {
-  def uploadSchema(schemaId: UUID, schema: Json): F[Unit]
+  def uploadSchema(schemaId: SchemaId, schema: Json): F[ActionResult]
 }
 
 object API {
@@ -22,7 +22,11 @@ object API {
 
   def server[F[_]: Applicative]: API[F] =
     new API[F] {
-      def uploadSchema(schemaId: UUID, schema: Json): F[Unit] = Applicative[F].unit
+
+      def uploadSchema(schemaId: SchemaId, schema: Json): F[ActionResult] = Applicative[F].pure(
+        ActionResult.UploadSchema(schemaId, ActionStatus.Success)
+      )
+
     }
 
   def client[F[_]: Concurrent](client: Client[F], baseUrl: Uri): API[F] =
@@ -31,14 +35,11 @@ object API {
       import dsl._
 
       def uploadSchema(
-        schemaId: UUID,
+        schemaId: SchemaId,
         schema: Json,
-      ): F[Unit] =
-        client
-          .expect(PUT.apply(baseUrl / "schema" / schemaId).withEntity(schema))(
-            // to avoid trying to decode "unit" from a Json object
-            EntityDecoder.void[F]
-          )
+      ): F[ActionResult] = client.expect(
+        POST.apply(baseUrl / "schema" / schemaId.value).withEntity(schema)
+      )
 
     }
 

@@ -13,6 +13,7 @@ val commonSettings = Seq(
     "is.cir" %% "ciris" % "2.3.3",
     "ch.qos.logback" % "logback-classic" % "1.2.11",
     compilerPlugin("org.polyvariant" % "better-tostring" % "0.3.16" cross CrossVersion.full),
+    compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
   ),
 )
 
@@ -44,8 +45,9 @@ val root = project
       "org.http4s" %% "http4s-dsl" % "0.23.14",
       "org.http4s" %% "http4s-ember-server" % "0.23.14",
       "org.http4s" %% "http4s-client" % "0.23.14",
-      "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
+      "io.circe" %% "circe-generic-extras" % "0.14.2",
       "io.circe" %% "circe-parser" % "0.14.2" % Test,
+      "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
     ),
     addCommandAlias(
       "ci",
