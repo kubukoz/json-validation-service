@@ -12,12 +12,12 @@ object SkunkClient {
   def connectionPool[F[_]: Network: std.Console: Concurrent](
     config: DatabaseConfig
   ): Pool[F, Session[F]] = Session.pooled[F](
-    config.host.toString,
-    config.port.value,
-    config.user,
-    config.database,
-    config.password.some,
-    max = 10,
+    host = config.host.toString,
+    port = config.port.value,
+    user = config.user,
+    database = config.database,
+    password = config.password.some,
+    max = config.maxConnections,
   )
 
 }

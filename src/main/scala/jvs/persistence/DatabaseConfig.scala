@@ -12,6 +12,7 @@ final case class DatabaseConfig(
   user: String,
   database: String,
   password: String,
+  maxConnections: Int,
 )
 
 object DatabaseConfig {
@@ -25,6 +26,7 @@ object DatabaseConfig {
       env("DB_USER").as[String].default("postgres"),
       env("DB_DATABASE").as[String].default("postgres"),
       env("DB_PASSWORD").as[String].default("example"),
+      env("DB_MAX_CONNECTIONS").as[Int].default(10),
     ).parMapN(apply)
   }
 

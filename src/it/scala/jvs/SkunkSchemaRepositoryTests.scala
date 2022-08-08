@@ -11,7 +11,11 @@ import jvs.persistence.DatabaseConfig
 import jvs.persistence.PersistenceError
 import jvs.persistence.SchemaRepository
 import jvs.persistence.SkunkClient
+import skunk.Session
+import skunk.implicits._
 import weaver._
+
+import scala.concurrent.duration._
 
 object SkunkSchemaRepositoryTests extends IOSuite {
   type Res = SchemaRepository[IO]
@@ -20,7 +24,18 @@ object SkunkSchemaRepositoryTests extends IOSuite {
     .config[IO]
     .resource
     .flatMap(SkunkClient.connectionPool[IO](_))
+    .evalTap(awaitReady)
     .map(SchemaRepository.skunkBased(_))
+
+  private def awaitReady(
+    pool: Resource[IO, Session[IO]]
+  ): IO[Unit] = {
+
+    val attempt = pool.use(_.execute(sql"select 1".query(skunk.codec.numeric.int4)))
+
+    // using fs2 to avoid pulling in a retry library or reimplementing the same logic
+    fs2.Stream.retry(attempt, 1.second, _ * 2, 10).compile.drain
+  }
 
   test("a schema can be retrieved once inserted") { repo =>
     UUIDGen[IO].randomUUID.flatMap { uuid =>
