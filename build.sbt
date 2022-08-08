@@ -12,7 +12,8 @@ val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "is.cir" %% "ciris" % "2.3.3",
     "ch.qos.logback" % "logback-classic" % "1.2.11",
-    "io.circe" %% "circe-parser" % "0.14.2" % Test,
+    "io.circe" %% "circe-parser" % "0.14.2",
+    "org.typelevel" %% "log4cats-noop" % "2.4.0" % Test,
     "io.circe" %% "circe-literal" % "0.14.2" % Test,
     compilerPlugin("org.polyvariant" % "better-tostring" % "0.3.16" cross CrossVersion.full),
     compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),

@@ -6,8 +6,11 @@ import cats.effect.ResourceApp
 import cats.implicits._
 import jvs.http.API
 import jvs.http.HttpServer
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
 
 object Main extends ResourceApp.Forever {
+  implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   def run(args: List[String]): Resource[IO, Unit] =
     AppConfig

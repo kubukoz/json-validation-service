@@ -5,12 +5,10 @@ import jvs.http.API
 import jvs.http.HttpServer
 import jvs.model.SchemaId
 import jvs.transport.ActionResult
-import jvs.transport.ActionStatus
 import org.http4s.Uri
 import org.http4s.client.Client
-import cats.implicits._
 import weaver._
-import jvs.transport.ActionKind
+import jvs.transport.ActionStatus
 
 object RouteTests extends SimpleIOSuite {
 
@@ -22,17 +20,12 @@ object RouteTests extends SimpleIOSuite {
 
       def uploadSchema(schemaId: SchemaId, schema: String): IO[ActionResult] = {
         val responses = Map(
-          validSchemaId -> ActionResult(
-            action = ActionKind.UploadSchema,
-            schemaId,
-            status = ActionStatus.Success,
-            message = None,
+          validSchemaId -> ActionResult.uploadSchemaSuccess(
+            schemaId
           ),
-          invalidSchemaId -> ActionResult(
-            action = ActionKind.UploadSchema,
+          invalidSchemaId -> ActionResult.uploadSchemaError(
             schemaId,
-            status = ActionStatus.Error,
-            message = "Invalid JSON".some,
+            message = "Invalid JSON",
           ),
         )
 
@@ -47,14 +40,7 @@ object RouteTests extends SimpleIOSuite {
     client
       .uploadSchema(validSchemaId, "{}")
       .map { uploadResult =>
-        val expected = ActionResult(
-          action = ActionKind.UploadSchema,
-          validSchemaId,
-          status = ActionStatus.Success,
-          message = None,
-        )
-
-        assert(uploadResult == expected)
+        assert(uploadResult.status == ActionStatus.Success)
       }
   }
 
@@ -62,15 +48,8 @@ object RouteTests extends SimpleIOSuite {
     client
       .uploadSchema(invalidSchemaId, "{")
       .map { uploadResult =>
-        val expected = ActionResult(
-          action = ActionKind.UploadSchema,
-          invalidSchemaId,
-          status = ActionStatus.Error,
-          message = "Invalid JSON".some,
-        )
-
         assert(
-          uploadResult == expected
+          uploadResult.status == ActionStatus.Error
         )
       }
   }

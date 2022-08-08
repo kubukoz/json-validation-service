@@ -11,6 +11,8 @@ import org.http4s.Uri
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
+import org.typelevel.log4cats.Logger
+import cats.implicits._
 
 trait API[F[_]] {
   def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult]
@@ -20,17 +22,25 @@ object API {
 
   def apply[F[_]](implicit F: API[F]): API[F] = F
 
-  def server[F[_]: Applicative]: API[F] =
+  def server[F[_]: Applicative: Logger]: API[F] =
     new API[F] {
 
-      def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult] = Applicative[F].pure(
-        ActionResult(
-          action = ActionKind.UploadSchema,
-          schemaId,
-          status = ActionStatus.Success,
-          message = None,
-        )
-      )
+      def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult] =
+        io.circe.parser.parse(schema) match {
+          case Left(e) =>
+            Logger[F]
+              .debug(e)("Failed to parse schema")
+              .as(
+                ActionResult.uploadSchemaError(
+                  schemaId,
+                  "Invalid JSON",
+                )
+              )
+          case Right(_) =>
+            Applicative[F].pure(
+              ActionResult.uploadSchemaSuccess(schemaId)
+            )
+        }
 
     }
 

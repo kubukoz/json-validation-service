@@ -3,12 +3,10 @@ package jvs.transport
 import cats.implicits._
 import io.circe.Codec
 import io.circe.Decoder
-import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
 import io.circe.syntax._
 import jvs.http.CirceConfig._
 
-import scala.annotation.nowarn
 import jvs.model.SchemaId
 
 final case class ActionResult(
@@ -19,6 +17,25 @@ final case class ActionResult(
 )
 
 object ActionResult {
+
+  def uploadSchemaSuccess(
+    schemaId: SchemaId
+  ): ActionResult = ActionResult(
+    ActionKind.UploadSchema,
+    schemaId,
+    ActionStatus.Success,
+    message = None,
+  )
+
+  def uploadSchemaError(
+    schemaId: SchemaId,
+    message: String,
+  ): ActionResult = ActionResult(
+    ActionKind.UploadSchema,
+    schemaId,
+    ActionStatus.Error,
+    message = Some(message),
+  )
 
   implicit val codec: Codec[ActionResult] = deriveConfiguredCodec
 
