@@ -36,7 +36,7 @@ object HttpServer {
         req.decode[Json] { schema =>
           api
             .uploadSchema(SchemaId(schemaId), schema)
-            .flatMap(Accepted(_))
+            .flatMap(Created(_))
         }
       }
       .orNotFound

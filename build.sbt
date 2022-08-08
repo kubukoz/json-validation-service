@@ -12,6 +12,8 @@ val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "is.cir" %% "ciris" % "2.3.3",
     "ch.qos.logback" % "logback-classic" % "1.2.11",
+    "io.circe" %% "circe-parser" % "0.14.2" % Test,
+    "io.circe" %% "circe-literal" % "0.14.2" % Test,
     compilerPlugin("org.polyvariant" % "better-tostring" % "0.3.16" cross CrossVersion.full),
     compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
   ),
@@ -23,8 +25,9 @@ lazy val e2e = project
   .settings(
     commonSettings,
     libraryDependencies ++= Seq(
-      "org.http4s" %% "http4s-ember-client" % "0.23.14",
+      "org.http4s" %% "http4s-ember-client" % "0.23.14" % Test,
       "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
+      "org.http4s" %% "http4s-circe" % "0.23.14" % Test,
     ),
   )
   .configs(E2EConfig)
@@ -46,8 +49,6 @@ val root = project
       "org.http4s" %% "http4s-ember-server" % "0.23.14",
       "org.http4s" %% "http4s-client" % "0.23.14",
       "io.circe" %% "circe-generic-extras" % "0.14.2",
-      "io.circe" %% "circe-parser" % "0.14.2" % Test,
-      "io.circe" %% "circe-literal" % "0.14.2" % Test,
       "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
     ),
     addCommandAlias(
