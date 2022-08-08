@@ -3,7 +3,7 @@ package jvs.http
 import cats.MonadThrow
 import cats.effect.Concurrent
 import cats.implicits._
-import jvs.errors.AppError
+import jvs.services.AppError
 import jvs.model.Schema
 import jvs.model.SchemaId
 import jvs.services.SchemaService

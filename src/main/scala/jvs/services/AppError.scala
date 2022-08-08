@@ -1,4 +1,4 @@
-package jvs.errors
+package jvs.services
 
 sealed trait AppError extends Exception with Product with Serializable {
   def getMessage: String

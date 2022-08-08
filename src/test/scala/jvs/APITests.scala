@@ -1,7 +1,7 @@
 package jvs
 
 import cats.effect.IO
-import jvs.errors.AppError
+import jvs.services.AppError
 import jvs.http.API
 import jvs.model.Schema
 import jvs.model.SchemaId
