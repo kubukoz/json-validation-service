@@ -15,9 +15,14 @@ import org.http4s.circe.CirceEntityCodec._
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.typelevel.log4cats.Logger
+import io.circe.Json
+import org.http4s.Status
+import cats.Applicative
+import org.http4s.client.UnexpectedStatus
 
 trait API[F[_]] {
   def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult]
+  def downloadSchema(schemaId: SchemaId): F[Option[Json]]
 }
 
 object API {
@@ -50,6 +55,13 @@ object API {
           .recover { case e: AppError => ActionResult.uploadSchemaError(schemaId, e.getMessage) }
       }
 
+      def downloadSchema(
+        schemaId: SchemaId
+      ): F[Option[Json]] = SchemaService[F]
+        .getSchema(schemaId)
+        .map(_.json.some)
+        .recover { case AppError.SchemaNotFound => None }
+
     }
 
   def client[F[_]: Concurrent](client: Client[F], baseUrl: Uri): API[F] = {
@@ -63,6 +75,20 @@ object API {
       ): F[ActionResult] = client
         .run(raw.uploadSchema(schemaId, schema))
         .use(_.as[ActionResult])
+
+      def downloadSchema(schemaId: SchemaId): F[Option[Json]] = {
+        val request = raw.downloadSchema(schemaId)
+
+        client
+          .run(request)
+          .use {
+            case response if response.status.isSuccess           => response.as[Json].map(_.some)
+            case response if response.status === Status.NotFound => Applicative[F].pure(none)
+            case response =>
+              UnexpectedStatus(response.status, request.method, request.uri)
+                .raiseError[F, Option[Json]]
+          }
+      }
 
     }
   }
@@ -79,6 +105,8 @@ object API {
         schemaId: SchemaId,
         schema: String,
       ): Request[F] = POST(baseUrl / "schema" / schemaId.value).withEntity(schema)
+
+      def downloadSchema(schemaId: SchemaId): Request[F] = GET(baseUrl / "schema" / schemaId.value)
 
     }
 

@@ -1,6 +1,8 @@
 package jvs
 
 import cats.effect.IO
+import cats.implicits._
+import io.circe.Json
 import jvs.http.API
 import jvs.http.HttpServer
 import jvs.model.SchemaId
@@ -14,7 +16,10 @@ import org.http4s.Status
 object RouteTests extends SimpleIOSuite {
 
   private val validSchemaId = SchemaId("valid schema")
+  private val nonExistentSchemaId = SchemaId("schema doesn't exist")
   private val invalidSchemaId = SchemaId("invalid schema")
+
+  private val validSchema = Json.obj()
 
   private val fakeAPI: API[IO] =
     new API[IO] {
@@ -31,6 +36,15 @@ object RouteTests extends SimpleIOSuite {
         )
 
         IO.pure(responses(schemaId))
+      }
+
+      def downloadSchema(schemaId: SchemaId): IO[Option[Json]] = {
+        val responses = Map(
+          validSchemaId -> validSchema.some.pure[IO],
+          nonExistentSchemaId -> none.pure[IO],
+        )
+
+        responses(schemaId)
       }
 
     }
@@ -62,5 +76,17 @@ object RouteTests extends SimpleIOSuite {
     http4sClient.status(clientRaw.uploadSchema(invalidSchemaId, "{")).map {
       assert.eql(_, Status.UnprocessableEntity)
     }
+  }
+
+  test("Download schema successfully") {
+    client
+      .downloadSchema(validSchemaId)
+      .map(assert.eql(_, validSchema.some))
+  }
+
+  test("Download schema: not found".only) {
+    client
+      .downloadSchema(nonExistentSchemaId)
+      .map(assert.eql(_, None))
   }
 }

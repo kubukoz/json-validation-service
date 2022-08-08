@@ -9,6 +9,7 @@ import jvs.persistence.SchemaRepository
 
 trait SchemaService[F[_]] {
   def persistSchema(schema: Schema): F[Unit]
+  def getSchema(id: SchemaId): F[Schema]
 }
 
 object SchemaService {
@@ -19,6 +20,10 @@ object SchemaService {
 
       def persistSchema(schema: Schema): F[Unit] = SchemaRepository[F].insert(schema).adaptErr {
         case PersistenceError.Conflict => AppError.SchemaAlreadyExists
+      }
+
+      def getSchema(id: SchemaId): F[Schema] = SchemaRepository[F].get(id).adaptErr {
+        case PersistenceError.NotFound => AppError.SchemaNotFound
       }
 
     }

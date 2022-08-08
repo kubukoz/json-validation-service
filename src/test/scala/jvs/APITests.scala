@@ -9,11 +9,14 @@ import jvs.services.SchemaService
 import jvs.transport.ActionStatus
 import org.typelevel.log4cats.noop.NoOpLogger
 import weaver._
+import io.circe.Json
 
 object APITests extends SimpleIOSuite {
   private implicit val logger = NoOpLogger[IO]
 
+  private val aSchema = Json.obj()
   private val aSchemaId = SchemaId("a schema id")
+  private val anExistingSchemaId = SchemaId("a schema that exists")
 
   private implicit val schemaService: SchemaService[IO] =
     new SchemaService[IO] {
@@ -23,6 +26,12 @@ object APITests extends SimpleIOSuite {
           IO.raiseError(AppError.SchemaAlreadyExists)
         else
           IO.unit
+
+      def getSchema(id: SchemaId): IO[Schema] =
+        if (id.value.contains("exists"))
+          IO.pure(Schema(id, aSchema))
+        else
+          IO.raiseError(AppError.SchemaNotFound)
 
     }
 
@@ -42,11 +51,27 @@ object APITests extends SimpleIOSuite {
   }
 
   test("Upload schema fails: underlying service fails") {
-    val perform = api.uploadSchema(SchemaId("already exists"), "{}")
+    val perform = api.uploadSchema(anExistingSchemaId, "{}")
 
     perform.map { result =>
       assert(result.status == ActionStatus.Error) &&
       assert(result.message == Some("Schema already exists"))
     }
+  }
+
+  test("Download schema: success") {
+    api
+      .downloadSchema(anExistingSchemaId)
+      .map { result =>
+        assert(result == Some(aSchema))
+      }
+  }
+
+  test("Download schema: nonexistent entry") {
+    api
+      .downloadSchema(aSchemaId)
+      .map { result =>
+        assert(result.isEmpty)
+      }
   }
 }
