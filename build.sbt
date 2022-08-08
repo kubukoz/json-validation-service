@@ -47,6 +47,7 @@ val root = project
       "org.http4s" %% "http4s-client" % "0.23.14",
       "io.circe" %% "circe-generic-extras" % "0.14.2",
       "io.circe" %% "circe-parser" % "0.14.2" % Test,
+      "io.circe" %% "circe-literal" % "0.14.2" % Test,
       "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
     ),
     addCommandAlias(

@@ -36,11 +36,6 @@ object RouteTests extends SimpleIOSuite {
       .readResourceJson("/examples/config-schema.json")
       .flatMap { schema =>
         client.uploadSchema(validSchemaId, schema)
-      /* {
-    "action": "uploadSchema",
-    "id": "config-schema",
-    "status": "success"
-} */
       }
       .map { uploadResult =>
         assert(uploadResult == ActionResult.UploadSchema(validSchemaId, ActionStatus.Success))
