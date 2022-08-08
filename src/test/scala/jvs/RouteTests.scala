@@ -43,7 +43,7 @@ object RouteTests extends SimpleIOSuite {
 
   private val client = API.client(Client.fromHttpApp(HttpServer.routes[IO](fakeAPI)), Uri())
 
-  test("Upload schema") {
+  test("Upload schema successfully") {
     client
       .uploadSchema(validSchemaId, "{}")
       .map { uploadResult =>
@@ -58,7 +58,7 @@ object RouteTests extends SimpleIOSuite {
       }
   }
 
-  test("Upload non-JSON schema") {
+  test("Upload schema with error response") {
     client
       .uploadSchema(invalidSchemaId, "{")
       .map { uploadResult =>
