@@ -11,7 +11,7 @@ import jvs.model.SchemaId
 
 final case class ActionResult(
   action: ActionKind,
-  schemaId: SchemaId,
+  id: SchemaId,
   status: ActionStatus,
   message: Option[String],
 )

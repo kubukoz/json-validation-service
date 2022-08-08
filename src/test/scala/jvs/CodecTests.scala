@@ -21,7 +21,7 @@ object CodecTests extends FunSuite {
     val expected =
       json"""{
         "action": "uploadSchema",
-        "schemaId": "a schema",
+        "id": "a schema",
         "status": "success",
         "message": "a message"
       }"""
