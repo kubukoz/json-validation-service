@@ -31,18 +31,27 @@ object HttpServer {
     import dsl._
 
     HttpRoutes
-      .of[F] { case req @ (POST -> Root / "schema" / schemaId) =>
-        req
-          .bodyText
-          .compile
-          .string
-          .flatMap { schema =>
-            api.uploadSchema(SchemaId(schemaId), schema)
-          }
-          .flatMap {
-            case result if result.isSuccess => Created(result)
-            case result                     => UnprocessableEntity(result)
-          }
+      .of[F] {
+        case req @ (POST -> Root / "schema" / schemaId) =>
+          req
+            .bodyText
+            .compile
+            .string
+            .flatMap { schema =>
+              api.uploadSchema(SchemaId(schemaId), schema)
+            }
+            .flatMap {
+              case result if result.isSuccess => Created(result)
+              case result                     => UnprocessableEntity(result)
+            }
+
+        case GET -> Root / "schema" / schemaId =>
+          api
+            .downloadSchema(SchemaId(schemaId))
+            .flatMap {
+              case None         => NotFound()
+              case Some(schema) => Ok(schema)
+            }
       }
       .orNotFound
       .pipe(JsonDebugErrorHandler[F, F](_))

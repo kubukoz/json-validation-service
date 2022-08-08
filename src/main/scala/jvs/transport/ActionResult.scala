@@ -6,7 +6,6 @@ import io.circe.Decoder
 import io.circe.generic.extras.semiauto._
 import io.circe.syntax._
 import jvs.http.CirceConfig._
-
 import jvs.model.SchemaId
 
 final case class ActionResult(

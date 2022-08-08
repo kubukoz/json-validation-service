@@ -6,4 +6,5 @@ sealed trait AppError extends Exception with Product with Serializable {
 
 object AppError {
   case object SchemaAlreadyExists extends Exception("Schema already exists") with AppError
+  case object SchemaNotFound extends Exception with AppError
 }

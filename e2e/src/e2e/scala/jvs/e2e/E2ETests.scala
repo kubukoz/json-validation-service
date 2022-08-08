@@ -35,7 +35,7 @@ object E2ETests extends IOSuite {
       E2EConfig.config[IO].resource[IO],
     ).tupled
 
-  test("Service responds to POST request with valid schema") { case (client, config) =>
+  test("Upload & get schema") { case (client, config) =>
     UUIDGen[IO]
       .randomUUID
       .flatMap { randomUUID =>
@@ -43,9 +43,15 @@ object E2ETests extends IOSuite {
           json"""{}"""
         )
 
-        client.status(request).map {
+        val create = client.status(request).map {
           assert.eql(_, Status.Created)
         }
+
+        val get = client.status(GET(config.baseUrl / "schema" / randomUUID)).map {
+          assert.eql(_, Status.Ok)
+        }
+
+        create |+| get
       }
   }
 }

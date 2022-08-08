@@ -34,4 +34,27 @@ object SchemaServiceTests extends SimpleIOSuite {
           }
     }
   }
+
+  test("getSchema: succeeds when the schema exists") {
+    mkService.flatMap { service =>
+      service.persistSchema(aValidSchema) *>
+        service
+          .getSchema(aValidSchema.id)
+          .map { result =>
+            assert(result == aValidSchema)
+          }
+    }
+  }
+
+  test("getSchema: fails when the schema doesn't exist") {
+    mkService.flatMap { service =>
+      service
+        .getSchema(SchemaId("non-existent schema"))
+        .attempt
+        .map { result =>
+          assert(result.isLeft) &&
+          assert(result == Left(AppError.SchemaNotFound))
+        }
+    }
+  }
 }

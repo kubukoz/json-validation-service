@@ -10,7 +10,7 @@ import weaver._
 import jvs.transport.ActionKind
 
 object CodecTests extends FunSuite {
-  test("ActionResult.UploadSchema") {
+  test("ActionResult") {
     val input: ActionResult = ActionResult(
       action = ActionKind.UploadSchema,
       SchemaId("a schema"),
