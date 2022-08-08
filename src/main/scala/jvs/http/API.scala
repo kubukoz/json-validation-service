@@ -2,17 +2,15 @@ package jvs.http
 
 import cats.Applicative
 import cats.effect.Concurrent
+import cats.implicits._
 import jvs.model.SchemaId
-import jvs.transport.ActionKind
 import jvs.transport.ActionResult
-import jvs.transport.ActionStatus
 import org.http4s.Method._
 import org.http4s.Uri
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.typelevel.log4cats.Logger
-import cats.implicits._
 
 trait API[F[_]] {
   def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult]
