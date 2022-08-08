@@ -1,17 +1,20 @@
 package jvs.e2e
 
 import cats.effect.IO
-
 import cats.effect.Resource
+import cats.effect.std.UUIDGen
 import cats.implicits._
+import io.circe.literal._
 import org.http4s.Method._
 import org.http4s.Status
+import org.http4s.circe.CirceEntityCodec._
 import org.http4s.client.Client
 import org.http4s.client.dsl.io._
-import org.http4s.ember.client.EmberClientBuilder
-import weaver._
 import org.http4s.client.middleware.Retry
 import org.http4s.client.middleware.RetryPolicy
+import org.http4s.ember.client.EmberClientBuilder
+import weaver._
+
 import scala.concurrent.duration._
 
 object E2ETests extends IOSuite {
@@ -32,11 +35,17 @@ object E2ETests extends IOSuite {
       E2EConfig.config[IO].resource[IO],
     ).tupled
 
-  test("Service responds to GET request") { case (client, config) =>
-    val request = GET(config.baseUrl / "hello")
+  test("Service responds to POST request with valid schema") { case (client, config) =>
+    UUIDGen[IO]
+      .randomUUID
+      .flatMap { randomUUID =>
+        val request = POST(config.baseUrl / "schema" / randomUUID).withEntity(
+          json"""{}"""
+        )
 
-    client.status(request).map {
-      assert.eql(_, Status.Ok)
-    }
+        client.status(request).map {
+          assert.eql(_, Status.Created)
+        }
+      }
   }
 }

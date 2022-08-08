@@ -20,7 +20,7 @@ object E2EConfig {
     env("E2E_BASE_URL")
       .as[Uri]
       .default(uri"http://localhost:4000")
-      .map(E2EConfig.apply)
+      .map(apply)
   }
 
 }
