@@ -10,6 +10,7 @@ import org.http4s.Uri
 import org.http4s.client.Client
 import cats.implicits._
 import weaver._
+import jvs.transport.ActionKind
 
 object RouteTests extends SimpleIOSuite {
 
@@ -21,14 +22,16 @@ object RouteTests extends SimpleIOSuite {
 
       def uploadSchema(schemaId: SchemaId, schema: String): IO[ActionResult] = {
         val responses = Map(
-          validSchemaId -> ActionResult.UploadSchema(
+          validSchemaId -> ActionResult(
+            action = ActionKind.UploadSchema,
             schemaId,
-            ActionStatus.Success,
+            status = ActionStatus.Success,
             message = None,
           ),
-          invalidSchemaId -> ActionResult.UploadSchema(
+          invalidSchemaId -> ActionResult(
+            action = ActionKind.UploadSchema,
             schemaId,
-            ActionStatus.Error,
+            status = ActionStatus.Error,
             message = "Invalid JSON".some,
           ),
         )
@@ -44,12 +47,12 @@ object RouteTests extends SimpleIOSuite {
     client
       .uploadSchema(validSchemaId, "{}")
       .map { uploadResult =>
-        val expected = ActionResult
-          .UploadSchema(
-            validSchemaId,
-            ActionStatus.Success,
-            message = None,
-          )
+        val expected = ActionResult(
+          action = ActionKind.UploadSchema,
+          validSchemaId,
+          status = ActionStatus.Success,
+          message = None,
+        )
 
         assert(uploadResult == expected)
       }
@@ -59,8 +62,12 @@ object RouteTests extends SimpleIOSuite {
     client
       .uploadSchema(invalidSchemaId, "{")
       .map { uploadResult =>
-        val expected = ActionResult
-          .UploadSchema(invalidSchemaId, ActionStatus.Error, message = "Invalid JSON".some)
+        val expected = ActionResult(
+          action = ActionKind.UploadSchema,
+          invalidSchemaId,
+          status = ActionStatus.Error,
+          message = "Invalid JSON".some,
+        )
 
         assert(
           uploadResult == expected

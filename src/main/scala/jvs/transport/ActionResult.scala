@@ -6,27 +6,36 @@ import io.circe.Decoder
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
 import io.circe.syntax._
-import jvs.http.CirceConfig
+import jvs.http.CirceConfig._
 
 import scala.annotation.nowarn
 import jvs.model.SchemaId
 
-sealed trait ActionResult extends Product with Serializable
+final case class ActionResult(
+  action: ActionKind,
+  schemaId: SchemaId,
+  status: ActionStatus,
+  message: Option[String],
+)
 
 object ActionResult {
-  final case class UploadSchema(schemaId: SchemaId, status: ActionStatus, message: Option[String])
-    extends ActionResult
 
-  implicit val codec: Codec[ActionResult] = {
+  implicit val codec: Codec[ActionResult] = deriveConfiguredCodec
 
-    // Used in a macro
-    @nowarn("cat=unused")
-    implicit val configuration: Configuration = CirceConfig
-      .base
-      .withDiscriminator("action")
+}
 
-    deriveConfiguredCodec
-  }
+sealed trait ActionKind extends Product with Serializable
+
+object ActionKind {
+  case object UploadSchema extends ActionKind
+
+  implicit val codec: Codec[ActionKind] = Codec.from(
+    Decoder[String].emap {
+      case "uploadSchema" => UploadSchema.asRight
+      case other          => other.asLeft
+    },
+    { case UploadSchema => "uploadSchema".asJson },
+  )
 
 }
 

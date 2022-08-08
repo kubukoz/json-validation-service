@@ -7,12 +7,14 @@ import jvs.model.SchemaId
 import jvs.transport.ActionResult
 import jvs.transport.ActionStatus
 import weaver._
+import jvs.transport.ActionKind
 
 object CodecTests extends FunSuite {
   test("ActionResult.UploadSchema") {
-    val input: ActionResult = ActionResult.UploadSchema(
+    val input: ActionResult = ActionResult(
+      action = ActionKind.UploadSchema,
       SchemaId("a schema"),
-      ActionStatus.Success,
+      status = ActionStatus.Success,
       message = Some("a message"),
     )
 

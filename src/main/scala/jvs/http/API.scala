@@ -3,6 +3,7 @@ package jvs.http
 import cats.Applicative
 import cats.effect.Concurrent
 import jvs.model.SchemaId
+import jvs.transport.ActionKind
 import jvs.transport.ActionResult
 import jvs.transport.ActionStatus
 import org.http4s.Method._
@@ -23,7 +24,12 @@ object API {
     new API[F] {
 
       def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult] = Applicative[F].pure(
-        ActionResult.UploadSchema(schemaId, ActionStatus.Success, message = None)
+        ActionResult(
+          action = ActionKind.UploadSchema,
+          schemaId,
+          status = ActionStatus.Success,
+          message = None,
+        )
       )
 
     }
