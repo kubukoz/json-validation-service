@@ -15,7 +15,7 @@ ThisBuild / githubWorkflowAddedJobs ++= Seq(
         ),
         WorkflowStep.Run(
           commands = List("docker-compose down"),
-          cond = Some("always"),
+          cond = Some("always()"),
         ),
       ),
   )
