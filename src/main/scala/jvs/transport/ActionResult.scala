@@ -14,7 +14,9 @@ final case class ActionResult(
   id: SchemaId,
   status: ActionStatus,
   message: Option[String],
-)
+) {
+  def isSuccess = status == ActionStatus.Success
+}
 
 object ActionResult {
 

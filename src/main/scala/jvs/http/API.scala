@@ -3,12 +3,13 @@ package jvs.http
 import cats.MonadThrow
 import cats.effect.Concurrent
 import cats.implicits._
-import jvs.services.AppError
 import jvs.model.Schema
 import jvs.model.SchemaId
+import jvs.services.AppError
 import jvs.services.SchemaService
 import jvs.transport.ActionResult
 import org.http4s.Method._
+import org.http4s.Request
 import org.http4s.Uri
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.client.Client
@@ -51,17 +52,33 @@ object API {
 
     }
 
-  def client[F[_]: Concurrent](client: Client[F], baseUrl: Uri): API[F] =
+  def client[F[_]: Concurrent](client: Client[F], baseUrl: Uri): API[F] = {
+    val raw = clientRaw[F](baseUrl)
+
     new API[F] {
+
+      def uploadSchema(
+        schemaId: SchemaId,
+        schema: String,
+      ): F[ActionResult] = client
+        .run(raw.uploadSchema(schemaId, schema))
+        .use(_.as[ActionResult])
+
+    }
+  }
+
+  type ToRequest[F[_], _] = Request[F]
+
+  // API instance where all methods return a serialized form of the request.
+  def clientRaw[F[_]](baseUrl: Uri): API[ToRequest[F, *]] =
+    new API[ToRequest[F, *]] {
       private val dsl = new Http4sClientDsl[F] {}
       import dsl._
 
       def uploadSchema(
         schemaId: SchemaId,
         schema: String,
-      ): F[ActionResult] = client.expect(
-        POST(baseUrl / "schema" / schemaId.value).withEntity(schema)
-      )
+      ): Request[F] = POST(baseUrl / "schema" / schemaId.value).withEntity(schema)
 
     }
 
