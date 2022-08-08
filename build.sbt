@@ -3,12 +3,35 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 ThisBuild / scalaVersion := "2.13.8"
 ThisBuild / githubWorkflowPublishTargetBranches := Nil
 
+val commonSettings = Seq(
+  scalacOptions -= "-Xfatal-warnings",
+  scalacOptions += "-Xsource:3.0",
+  testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
+  libraryDependencies ++= Seq(
+    "is.cir" %% "ciris" % "2.3.3",
+    "ch.qos.logback" % "logback-classic" % "1.2.11",
+    compilerPlugin("org.polyvariant" % "better-tostring" % "0.3.16" cross CrossVersion.full),
+  ),
+)
+
+lazy val e2e = project
+  .settings(
+    commonSettings,
+    libraryDependencies ++= Seq(
+      "org.http4s" %% "http4s-ember-client" % "0.23.14",
+      "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
+    ),
+  )
+
 val root = project
   .in(file("."))
   .settings(
-    scalacOptions -= "-Xfatal-warnings",
-    scalacOptions += "-Xsource:3.0",
+    commonSettings,
     libraryDependencies ++= Seq(
-      compilerPlugin("org.polyvariant" % "better-tostring" % "0.3.16" cross CrossVersion.full)
+      "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
+      "org.http4s" %% "http4s-circe" % "0.23.14",
+      "org.http4s" %% "http4s-dsl" % "0.23.14",
+      "org.http4s" %% "http4s-ember-server" % "0.23.14",
     ),
   )
+  .aggregate(e2e)
