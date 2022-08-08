@@ -4,6 +4,7 @@ import cats.effect.Concurrent
 import cats.effect.Resource
 import cats.effect.kernel.Async
 import cats.implicits._
+import io.circe.Json
 import jvs.http.HttpConfig
 import org.http4s.HttpApp
 import org.http4s.HttpRoutes
@@ -30,7 +31,13 @@ object HttpServer {
     import dsl._
 
     HttpRoutes
-      .of[F] { case GET -> Root / "hello" => api.hello.flatMap(Ok(_)) }
+      .of[F] { case req @ (PUT -> Root / "schema" / UUIDVar(schemaId)) =>
+        req.decode[Json] { schema =>
+          api
+            .uploadSchema(schemaId, schema) *> Accepted()
+        }
+
+      }
       .orNotFound
       .pipe(JsonDebugErrorHandler[F, F](_))
   }

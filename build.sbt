@@ -45,6 +45,7 @@ val root = project
       "org.http4s" %% "http4s-ember-server" % "0.23.14",
       "org.http4s" %% "http4s-client" % "0.23.14",
       "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
+      "io.circe" %% "circe-parser" % "0.14.2" % Test,
     ),
     addCommandAlias(
       "ci",
