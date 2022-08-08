@@ -1,14 +1,15 @@
 package jvs
 
 import cats.effect.IO
-import jvs.SchemaId
+import io.circe.Json
 import jvs.http.API
 import jvs.http.HttpServer
+import jvs.model.SchemaId
+import jvs.transport.ActionResult
+import jvs.transport.ActionStatus
 import org.http4s.Uri
 import org.http4s.client.Client
 import weaver._
-import io.circe.Json
-import cats.implicits._
 
 object RouteTests extends SimpleIOSuite {
 

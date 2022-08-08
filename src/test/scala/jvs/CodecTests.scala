@@ -3,6 +3,9 @@ package jvs
 import cats.implicits._
 import io.circe.literal._
 import io.circe.syntax._
+import jvs.model.SchemaId
+import jvs.transport.ActionResult
+import jvs.transport.ActionStatus
 import weaver._
 
 object CodecTests extends FunSuite {

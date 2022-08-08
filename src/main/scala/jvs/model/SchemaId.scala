@@ -1,4 +1,4 @@
-package jvs
+package jvs.model
 
 import io.circe.Codec
 import io.circe.generic.extras.semiauto._

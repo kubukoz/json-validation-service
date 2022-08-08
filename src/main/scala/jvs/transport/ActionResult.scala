@@ -1,4 +1,4 @@
-package jvs
+package jvs.transport
 
 import cats.implicits._
 import io.circe.Codec
@@ -9,6 +9,7 @@ import io.circe.syntax._
 import jvs.http.CirceConfig
 
 import scala.annotation.nowarn
+import jvs.model.SchemaId
 
 sealed trait ActionResult extends Product with Serializable
 

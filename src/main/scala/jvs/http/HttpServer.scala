@@ -5,7 +5,7 @@ import cats.effect.Resource
 import cats.effect.kernel.Async
 import cats.implicits._
 import io.circe.Json
-import jvs.SchemaId
+import jvs.model.SchemaId
 import jvs.http.HttpConfig
 import org.http4s.HttpApp
 import org.http4s.HttpRoutes
@@ -14,7 +14,6 @@ import org.http4s.circe.middleware.JsonDebugErrorHandler
 import org.http4s.dsl.Http4sDsl
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Server
-
 import util.chaining._
 
 object HttpServer {

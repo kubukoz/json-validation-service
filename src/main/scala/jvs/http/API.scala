@@ -3,14 +3,14 @@ package jvs.http
 import cats.Applicative
 import cats.effect.Concurrent
 import io.circe.Json
-import jvs.SchemaId
+import jvs.model.SchemaId
+import jvs.transport.ActionResult
+import jvs.transport.ActionStatus
 import org.http4s.Method._
 import org.http4s.Uri
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
-import jvs.ActionResult
-import jvs.ActionStatus
 
 trait API[F[_]] {
   def uploadSchema(schemaId: SchemaId, schema: Json): F[ActionResult]
