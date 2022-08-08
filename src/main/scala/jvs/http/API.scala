@@ -2,7 +2,6 @@ package jvs.http
 
 import cats.Applicative
 import cats.effect.Concurrent
-import io.circe.Json
 import jvs.model.SchemaId
 import jvs.transport.ActionResult
 import jvs.transport.ActionStatus
@@ -13,7 +12,7 @@ import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 
 trait API[F[_]] {
-  def uploadSchema(schemaId: SchemaId, schema: Json): F[ActionResult]
+  def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult]
 }
 
 object API {
@@ -23,8 +22,8 @@ object API {
   def server[F[_]: Applicative]: API[F] =
     new API[F] {
 
-      def uploadSchema(schemaId: SchemaId, schema: Json): F[ActionResult] = Applicative[F].pure(
-        ActionResult.UploadSchema(schemaId, ActionStatus.Success)
+      def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult] = Applicative[F].pure(
+        ActionResult.UploadSchema(schemaId, ActionStatus.Success, message = None)
       )
 
     }
@@ -36,7 +35,7 @@ object API {
 
       def uploadSchema(
         schemaId: SchemaId,
-        schema: Json,
+        schema: String,
       ): F[ActionResult] = client.expect(
         POST(baseUrl / "schema" / schemaId.value).withEntity(schema)
       )

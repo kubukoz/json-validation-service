@@ -4,9 +4,8 @@ import cats.effect.Concurrent
 import cats.effect.Resource
 import cats.effect.kernel.Async
 import cats.implicits._
-import io.circe.Json
-import jvs.model.SchemaId
 import jvs.http.HttpConfig
+import jvs.model.SchemaId
 import org.http4s.HttpApp
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec._
@@ -14,6 +13,7 @@ import org.http4s.circe.middleware.JsonDebugErrorHandler
 import org.http4s.dsl.Http4sDsl
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Server
+
 import util.chaining._
 
 object HttpServer {
@@ -32,11 +32,14 @@ object HttpServer {
 
     HttpRoutes
       .of[F] { case req @ (POST -> Root / "schema" / schemaId) =>
-        req.decode[Json] { schema =>
-          api
-            .uploadSchema(SchemaId(schemaId), schema)
-            .flatMap(Created(_))
-        }
+        req
+          .bodyText
+          .compile
+          .string
+          .flatMap { schema =>
+            api.uploadSchema(SchemaId(schemaId), schema)
+          }
+          .flatMap(Created(_))
       }
       .orNotFound
       .pipe(JsonDebugErrorHandler[F, F](_))

@@ -14,7 +14,8 @@ import jvs.model.SchemaId
 sealed trait ActionResult extends Product with Serializable
 
 object ActionResult {
-  final case class UploadSchema(schemaId: SchemaId, status: ActionStatus) extends ActionResult
+  final case class UploadSchema(schemaId: SchemaId, status: ActionStatus, message: Option[String])
+    extends ActionResult
 
   implicit val codec: Codec[ActionResult] = {
 
@@ -33,13 +34,18 @@ sealed trait ActionStatus extends Product with Serializable
 
 object ActionStatus {
   case object Success extends ActionStatus
+  case object Error extends ActionStatus
 
   implicit val codec: Codec[ActionStatus] = Codec.from(
     Decoder[String].emap {
       case "success" => Success.asRight
+      case "error"   => Error.asRight
       case other     => other.asLeft
     },
-    { case Success => "success".asJson },
+    {
+      case Success => "success".asJson
+      case Error   => "error".asJson
+    },
   )
 
 }

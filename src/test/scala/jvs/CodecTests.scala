@@ -10,13 +10,18 @@ import weaver._
 
 object CodecTests extends FunSuite {
   test("ActionResult.UploadSchema") {
-    val input: ActionResult = ActionResult.UploadSchema(SchemaId("a schema"), ActionStatus.Success)
+    val input: ActionResult = ActionResult.UploadSchema(
+      SchemaId("a schema"),
+      ActionStatus.Success,
+      message = Some("a message"),
+    )
 
     val expected =
       json"""{
         "action": "uploadSchema",
         "schemaId": "a schema",
-        "status": "success"
+        "status": "success",
+        "message": "a message"
       }"""
 
     assert.eql(input.asJson, expected) &&

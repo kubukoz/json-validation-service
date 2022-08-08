@@ -1,7 +1,6 @@
 package jvs
 
 import cats.effect.IO
-import io.circe.Json
 import jvs.http.API
 import jvs.http.HttpServer
 import jvs.model.SchemaId
@@ -9,23 +8,32 @@ import jvs.transport.ActionResult
 import jvs.transport.ActionStatus
 import org.http4s.Uri
 import org.http4s.client.Client
+import cats.implicits._
 import weaver._
 
 object RouteTests extends SimpleIOSuite {
 
   private val validSchemaId = SchemaId("valid schema")
   private val invalidSchemaId = SchemaId("invalid schema")
-  private val duplicateSchemaId = SchemaId("duplicate schema")
 
-  private val fakeAPI =
+  private val fakeAPI: API[IO] =
     new API[IO] {
 
-      def uploadSchema(schemaId: SchemaId, schema: Json): IO[ActionResult] = {
+      def uploadSchema(schemaId: SchemaId, schema: String): IO[ActionResult] = {
         val responses = Map(
-          validSchemaId -> ActionStatus.Success
+          validSchemaId -> ActionResult.UploadSchema(
+            schemaId,
+            ActionStatus.Success,
+            message = None,
+          ),
+          invalidSchemaId -> ActionResult.UploadSchema(
+            schemaId,
+            ActionStatus.Error,
+            message = "Invalid JSON".some,
+          ),
         )
 
-        IO.pure(ActionResult.UploadSchema(schemaId, responses(schemaId)))
+        IO.pure(responses(schemaId))
       }
 
     }
@@ -33,23 +41,30 @@ object RouteTests extends SimpleIOSuite {
   private val client = API.client(Client.fromHttpApp(HttpServer.routes[IO](fakeAPI)), Uri())
 
   test("Upload schema") {
-    ResourceUtils
-      .readResourceJson("/examples/config-schema.json")
-      .flatMap { schema =>
-        client.uploadSchema(validSchemaId, schema)
-      }
+    client
+      .uploadSchema(validSchemaId, "{}")
       .map { uploadResult =>
-        assert(uploadResult == ActionResult.UploadSchema(validSchemaId, ActionStatus.Success))
+        val expected = ActionResult
+          .UploadSchema(
+            validSchemaId,
+            ActionStatus.Success,
+            message = None,
+          )
+
+        assert(uploadResult == expected)
       }
   }
 
-  test("Upload invalid schema") {
-    ignore("todo") *>
-      ResourceUtils
-        .readResourceJson("/examples/config-schema.json")
-        .flatMap { schema =>
-          client.uploadSchema(invalidSchemaId, schema)
-        }
-        .as(success)
+  test("Upload non-JSON schema") {
+    client
+      .uploadSchema(invalidSchemaId, "{")
+      .map { uploadResult =>
+        val expected = ActionResult
+          .UploadSchema(invalidSchemaId, ActionStatus.Error, message = "Invalid JSON".some)
+
+        assert(
+          uploadResult == expected
+        )
+      }
   }
 }

@@ -6,6 +6,7 @@ import cats.implicits._
 
 object ResourceUtils {
 
+  // todo: use for something more like an integration test
   def readResourceJson(path: String): IO[Json] = fs2
     .io
     .readClassResource[IO, ResourceUtils.type](path)
