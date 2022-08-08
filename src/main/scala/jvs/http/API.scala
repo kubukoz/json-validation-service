@@ -1,9 +1,12 @@
 package jvs.http
 
-import cats.Applicative
+import cats.MonadThrow
 import cats.effect.Concurrent
 import cats.implicits._
+import jvs.errors.AppError
+import jvs.model.Schema
 import jvs.model.SchemaId
+import jvs.services.SchemaService
 import jvs.transport.ActionResult
 import org.http4s.Method._
 import org.http4s.Uri
@@ -20,25 +23,31 @@ object API {
 
   def apply[F[_]](implicit F: API[F]): API[F] = F
 
-  def server[F[_]: Applicative: Logger]: API[F] =
+  def server[F[_]: SchemaService: MonadThrow: Logger]: API[F] =
     new API[F] {
 
-      def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult] =
-        io.circe.parser.parse(schema) match {
-          case Left(e) =>
-            Logger[F]
-              .debug(e)("Failed to parse schema")
-              .as(
-                ActionResult.uploadSchemaError(
-                  schemaId,
-                  "Invalid JSON",
-                )
-              )
-          case Right(_) =>
-            Applicative[F].pure(
-              ActionResult.uploadSchemaSuccess(schemaId)
+      def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult] = {
+        def invalidJson(e: Throwable): F[ActionResult] = Logger[F]
+          .debug(e)("Failed to parse schema")
+          .as(
+            ActionResult.uploadSchemaError(
+              schemaId,
+              "Invalid JSON",
             )
-        }
+          )
+
+        val actionResult =
+          io.circe.parser.parse(schema) match {
+            case Left(e) => invalidJson(e)
+            case Right(schemaJSON) =>
+              SchemaService[F]
+                .persistSchema(Schema(schemaId, schemaJSON))
+                .as(ActionResult.uploadSchemaSuccess(schemaId))
+          }
+
+        actionResult
+          .recover { case e: AppError => ActionResult.uploadSchemaError(schemaId, e.getMessage) }
+      }
 
     }
 
