@@ -40,10 +40,11 @@ val root = project
     dockerUpdateLatest := true,
     commonSettings,
     libraryDependencies ++= Seq(
-      "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
       "org.http4s" %% "http4s-circe" % "0.23.14",
       "org.http4s" %% "http4s-dsl" % "0.23.14",
       "org.http4s" %% "http4s-ember-server" % "0.23.14",
+      "org.http4s" %% "http4s-client" % "0.23.14",
+      "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
     ),
     addCommandAlias(
       "ci",

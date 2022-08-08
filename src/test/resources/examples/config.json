@@ -1,0 +1,10 @@
+{
+  "$schema": "./config-schema.json",
+  "source": "/home/alice/image.iso",
+  "destination": "/mnt/storage",
+  "timeout": null,
+  "chunks": {
+    "size": 1024,
+    "number": null
+  }
+}
