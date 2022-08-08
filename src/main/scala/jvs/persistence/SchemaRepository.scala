@@ -12,7 +12,6 @@ import jvs.persistence.PersistenceError
 import skunk.Session
 import skunk._
 import skunk.implicits._
-import skunk.exception.SkunkException
 
 trait SchemaRepository[F[_]] {
   def insert(schema: Schema): F[Unit]

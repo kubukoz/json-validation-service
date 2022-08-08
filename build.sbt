@@ -32,7 +32,7 @@ lazy val e2e = project
       "org.http4s" %% "http4s-circe" % "0.23.14" % Test,
     ),
   )
-  .configs(E2EConfig)
+  .configs(E2EConfig, IntegrationTest)
   .settings(
     inConfig(E2EConfig)(
       Defaults.testSettings ++ bloop.integrations.sbt.BloopDefaults.configSettings
@@ -57,7 +57,8 @@ val root = project
     ),
     addCommandAlias(
       "ci",
-      List("test", "Docker/publishLocal", "composeUp", "e2e/E2EConfig/test").mkString(";"),
+      List("test", "Docker/publishLocal", "composeUp", "IntegrationTest/test", "e2e/E2EConfig/test")
+        .mkString(";"),
     ),
   )
   .configs(IntegrationTest)
