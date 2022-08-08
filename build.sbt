@@ -18,6 +18,7 @@ ThisBuild / githubWorkflowAddedJobs ++= Seq(
           cond = Some("always()"),
         ),
       ),
+    scalas = List(scalaVersion.value),
   )
 )
 
