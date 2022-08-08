@@ -9,12 +9,13 @@ val commonSettings = Seq(
   scalacOptions -= "-Xfatal-warnings",
   scalacOptions += "-Xsource:3.0",
   testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
+  IntegrationTest / testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
   libraryDependencies ++= Seq(
     "is.cir" %% "ciris" % "2.3.3",
     "ch.qos.logback" % "logback-classic" % "1.2.11",
     "io.circe" %% "circe-parser" % "0.14.2",
-    "org.typelevel" %% "log4cats-noop" % "2.4.0" % Test,
-    "io.circe" %% "circe-literal" % "0.14.2" % Test,
+    "org.typelevel" %% "log4cats-noop" % "2.4.0" % "it,test",
+    "io.circe" %% "circe-literal" % "0.14.2" % "it,test",
     compilerPlugin("org.polyvariant" % "better-tostring" % "0.3.16" cross CrossVersion.full),
     compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
   ),
@@ -31,7 +32,7 @@ lazy val e2e = project
       "org.http4s" %% "http4s-circe" % "0.23.14" % Test,
     ),
   )
-  .configs(E2EConfig)
+  .configs(E2EConfig, IntegrationTest)
   .settings(
     inConfig(E2EConfig)(
       Defaults.testSettings ++ bloop.integrations.sbt.BloopDefaults.configSettings
@@ -50,12 +51,17 @@ val root = project
       "org.http4s" %% "http4s-ember-server" % "0.23.14",
       "org.http4s" %% "http4s-client" % "0.23.14",
       "io.circe" %% "circe-generic-extras" % "0.14.2",
-      "com.disneystreaming" %% "weaver-cats" % "0.7.14" % Test,
+      "org.tpolecat" %% "skunk-core" % "0.2.3",
+      "org.tpolecat" %% "skunk-circe" % "0.2.3",
+      "com.disneystreaming" %% "weaver-cats" % "0.7.14" % "it,test",
     ),
     addCommandAlias(
       "ci",
-      List("test", "Docker/publishLocal", "composeUp", "e2e/E2EConfig/test").mkString(";"),
+      List("test", "Docker/publishLocal", "composeUp", "IntegrationTest/test", "e2e/E2EConfig/test")
+        .mkString(";"),
     ),
   )
+  .configs(IntegrationTest)
+  .settings(Defaults.itSettings)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
   .aggregate(e2e)
