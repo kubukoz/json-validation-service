@@ -104,5 +104,5 @@ jobs:
           docker-compose up -d
           sbt e2e/test
 
-      - if: '"always"'
+      - if: always()
         run: docker-compose down
