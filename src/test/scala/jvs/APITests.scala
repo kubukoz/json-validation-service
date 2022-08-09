@@ -10,6 +10,8 @@ import jvs.transport.ActionStatus
 import org.typelevel.log4cats.noop.NoOpLogger
 import weaver._
 import io.circe.Json
+import cats.implicits._
+import jvs.transport.ActionKind
 
 object APITests extends SimpleIOSuite {
   private implicit val logger = NoOpLogger[IO]
@@ -74,7 +76,7 @@ object APITests extends SimpleIOSuite {
     api
       .downloadSchema(anExistingSchemaId)
       .map { result =>
-        assert(result == Some(aSchema))
+        assert(result == aSchema.asRight)
       }
   }
 
@@ -82,7 +84,9 @@ object APITests extends SimpleIOSuite {
     api
       .downloadSchema(nonExistentSchemaId)
       .map { result =>
-        assert(result.isEmpty)
+        assert(result.isLeft) &&
+        assert(result.leftMap(_.status) == Left(ActionStatus.Error)) &&
+        assert(result.leftMap(_.action) == Left(ActionKind.DownloadSchema))
       }
   }
 

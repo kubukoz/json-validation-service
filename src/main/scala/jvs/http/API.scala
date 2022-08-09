@@ -17,12 +17,11 @@ import org.http4s.client.dsl.Http4sClientDsl
 import org.typelevel.log4cats.Logger
 import io.circe.Json
 import org.http4s.Status
-import cats.Applicative
 import org.http4s.client.UnexpectedStatus
 
 trait API[F[_]] {
   def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult]
-  def downloadSchema(schemaId: SchemaId): F[Option[Json]]
+  def downloadSchema(schemaId: SchemaId): F[Either[ActionResult, Json]]
   def validateDocument(schemaId: SchemaId, document: Json): F[ActionResult]
 }
 
@@ -58,10 +57,12 @@ object API {
 
       def downloadSchema(
         schemaId: SchemaId
-      ): F[Option[Json]] = SchemaService[F]
+      ): F[Either[ActionResult, Json]] = SchemaService[F]
         .getSchema(schemaId)
-        .map(_.json.some)
-        .recover { case AppError.SchemaNotFound => None }
+        .map(_.json.asRight[ActionResult])
+        .recover { case e: AppError =>
+          ActionResult.downloadSchemaError(schemaId, e.getMessage).asLeft
+        }
 
       def validateDocument(
         schemaId: SchemaId,
@@ -69,9 +70,7 @@ object API {
       ): F[ActionResult] = SchemaService[F]
         .validateDocument(schemaId, document)
         .as(ActionResult.validateDocumentSuccess(schemaId))
-        .recover { case e: AppError =>
-          ActionResult.validateDocumentError(schemaId, e.getMessage)
-        }
+        .recover { case e: AppError => ActionResult.validateDocumentError(schemaId, e.getMessage) }
 
     }
 
@@ -87,17 +86,18 @@ object API {
         .run(raw.uploadSchema(schemaId, schema))
         .use(_.as[ActionResult])
 
-      def downloadSchema(schemaId: SchemaId): F[Option[Json]] = {
+      def downloadSchema(schemaId: SchemaId): F[Either[ActionResult, Json]] = {
         val request = raw.downloadSchema(schemaId)
 
         client
           .run(request)
           .use {
-            case response if response.status.isSuccess           => response.as[Json].map(_.some)
-            case response if response.status === Status.NotFound => Applicative[F].pure(none)
+            case response if response.status.isSuccess => response.as[Json].map(_.asRight)
+            case response if response.status === Status.NotFound =>
+              response.as[ActionResult].map(_.asLeft)
             case response =>
               UnexpectedStatus(response.status, request.method, request.uri)
-                .raiseError[F, Option[Json]]
+                .raiseError[F, Either[ActionResult, Json]]
           }
       }
 

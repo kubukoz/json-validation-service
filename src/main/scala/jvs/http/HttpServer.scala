@@ -50,8 +50,8 @@ object HttpServer {
           api
             .downloadSchema(SchemaId(schemaId))
             .flatMap {
-              case None         => NotFound()
-              case Some(schema) => Ok(schema)
+              case Left(e)       => NotFound(e)
+              case Right(schema) => Ok(schema)
             }
 
         case req @ POST -> Root / "validate" / schemaId =>
