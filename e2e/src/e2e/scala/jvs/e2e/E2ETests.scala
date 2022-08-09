@@ -4,8 +4,10 @@ import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.std.UUIDGen
 import cats.implicits._
+import io.circe.Json
 import io.circe.literal._
 import org.http4s.Method._
+import org.http4s.Response
 import org.http4s.Status
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.client.Client
@@ -35,18 +37,57 @@ object E2ETests extends IOSuite {
       E2EConfig.config[IO].resource[IO],
     ).tupled
 
+  private def checkStatusAndBody(
+    expectedStatus: Status,
+    expectedBody: Json,
+  )(
+    response: Response[IO]
+  ): IO[Expectations] = response
+    .as[Json]
+    .map { body =>
+      assert.eql(response.status, expectedStatus) &&
+      assert.eql(
+        body,
+        expectedBody,
+      )
+    }
+
   test("Upload sample schema & validate sample document against it") { case (client, config) =>
     for {
       schemaId <- UUIDGen[IO].randomUUID
 
       schema <- ResourceUtils.readResourceJson("/examples/config-schema.json")
-      createResult <- client.status(POST(config.baseUrl / "schema" / schemaId).withEntity(schema))
-      _ <- assert.eql(createResult, Status.Created).failFast[IO]
+      _ <- client
+        .run(POST(config.baseUrl / "schema" / schemaId).withEntity(schema))
+        .use {
+          checkStatusAndBody(
+            Status.Created,
+            json"""{
+                  "action": "uploadSchema",
+                  "id": ${schemaId.toString()},
+                  "status": "success",
+                  "message": null
+                }""",
+          )
+        }
+        .flatMap(_.failFast[IO])
 
       document <- ResourceUtils.readResourceJson("/examples/config.json")
-      validateResult <- client.status(
-        POST(config.baseUrl / "validate" / schemaId).withEntity(document)
-      )
-    } yield assert.eql(validateResult, Status.Ok)
+      assertions <- client
+        .run(
+          POST(config.baseUrl / "validate" / schemaId).withEntity(document)
+        )
+        .use {
+          checkStatusAndBody(
+            Status.Ok,
+            json"""{
+                  "action": "validateDocument",
+                  "id": ${schemaId.toString()},
+                  "status": "success",
+                  "message": null
+                }""",
+          )
+        }
+    } yield assertions
   }
 }
