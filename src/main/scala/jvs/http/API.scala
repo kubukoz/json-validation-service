@@ -23,6 +23,7 @@ import org.http4s.client.UnexpectedStatus
 trait API[F[_]] {
   def uploadSchema(schemaId: SchemaId, schema: String): F[ActionResult]
   def downloadSchema(schemaId: SchemaId): F[Option[Json]]
+  def validateDocument(schemaId: SchemaId, document: Json): F[ActionResult]
 }
 
 object API {
@@ -62,6 +63,16 @@ object API {
         .map(_.json.some)
         .recover { case AppError.SchemaNotFound => None }
 
+      def validateDocument(
+        schemaId: SchemaId,
+        document: Json,
+      ): F[ActionResult] = SchemaService[F]
+        .validateDocument(schemaId, document)
+        .as(ActionResult.validateDocumentSuccess(schemaId))
+        .recover { case e: AppError =>
+          ActionResult.validateDocumentError(schemaId, e.getMessage)
+        }
+
     }
 
   def client[F[_]: Concurrent](client: Client[F], baseUrl: Uri): API[F] = {
@@ -90,6 +101,10 @@ object API {
           }
       }
 
+      def validateDocument(schemaId: SchemaId, document: Json): F[ActionResult] = client
+        .run(raw.validateDocument(schemaId, document))
+        .use(_.as[ActionResult])
+
     }
   }
 
@@ -107,6 +122,10 @@ object API {
       ): Request[F] = POST(baseUrl / "schema" / schemaId.value).withEntity(schema)
 
       def downloadSchema(schemaId: SchemaId): Request[F] = GET(baseUrl / "schema" / schemaId.value)
+
+      def validateDocument(schemaId: SchemaId, document: Json): Request[F] = POST(
+        baseUrl / "validate" / schemaId.value
+      ).withEntity(document)
 
     }
 

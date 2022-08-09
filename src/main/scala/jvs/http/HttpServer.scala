@@ -15,6 +15,7 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Server
 
 import util.chaining._
+import io.circe.Json
 
 object HttpServer {
 
@@ -52,6 +53,18 @@ object HttpServer {
               case None         => NotFound()
               case Some(schema) => Ok(schema)
             }
+
+        case req @ POST -> Root / "validate" / schemaId =>
+          req
+            .decode[Json] { body =>
+              api
+                .validateDocument(SchemaId(schemaId), body)
+                .flatMap {
+                  case result if result.isSuccess => Ok(result)
+                  case result                     => UnprocessableEntity(result)
+                }
+            }
+
       }
       .orNotFound
       .pipe(JsonDebugErrorHandler[F, F](_))
