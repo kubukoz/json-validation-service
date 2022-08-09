@@ -110,7 +110,7 @@ object SchemaServiceTests extends SimpleIOSuite {
           .attempt
           .map { result =>
             val msg =
-              "instance type (object) does not match any allowed primitive type (allowed: [\"string\"])"
+              """instance type (object) does not match any allowed primitive type (allowed: ["string"])"""
 
             assert(result.isLeft) &&
             assert(result == AppError.InvalidDocument(msg :: Nil).asLeft)
