@@ -53,6 +53,7 @@ val root = project
       "io.circe" %% "circe-generic-extras" % "0.14.2",
       "org.tpolecat" %% "skunk-core" % "0.2.3",
       "org.tpolecat" %% "skunk-circe" % "0.2.3",
+      "com.github.java-json-tools" % "json-schema-validator" % "2.2.14",
       "com.disneystreaming" %% "weaver-cats" % "0.7.14" % "it,test",
     ),
     addCommandAlias(

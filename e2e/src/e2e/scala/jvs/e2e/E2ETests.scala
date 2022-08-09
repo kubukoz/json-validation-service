@@ -35,23 +35,18 @@ object E2ETests extends IOSuite {
       E2EConfig.config[IO].resource[IO],
     ).tupled
 
-  test("Upload & get schema") { case (client, config) =>
-    UUIDGen[IO]
-      .randomUUID
-      .flatMap { randomUUID =>
-        val request = POST(config.baseUrl / "schema" / randomUUID).withEntity(
-          json"""{}"""
-        )
+  test("Upload sample schema & validate sample document against it") { case (client, config) =>
+    for {
+      schemaId <- UUIDGen[IO].randomUUID
 
-        val create = client.status(request).map {
-          assert.eql(_, Status.Created)
-        }
+      schema <- ResourceUtils.readResourceJson("/examples/config-schema.json")
+      createResult <- client.status(POST(config.baseUrl / "schema" / schemaId).withEntity(schema))
+      _ <- assert.eql(createResult, Status.Created).failFast[IO]
 
-        val get = client.status(GET(config.baseUrl / "schema" / randomUUID)).map {
-          assert.eql(_, Status.Ok)
-        }
-
-        create |+| get
-      }
+      document <- ResourceUtils.readResourceJson("/examples/config.json")
+      validateResult <- client.status(
+        POST(config.baseUrl / "validate" / schemaId).withEntity(document)
+      )
+    } yield assert.eql(validateResult, Status.Ok)
   }
 }

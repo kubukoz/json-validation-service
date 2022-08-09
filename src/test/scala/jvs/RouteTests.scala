@@ -12,6 +12,7 @@ import org.http4s.Uri
 import org.http4s.client.Client
 import weaver._
 import org.http4s.Status
+import jvs.transport.ActionKind
 
 object RouteTests extends SimpleIOSuite {
 
@@ -20,8 +21,10 @@ object RouteTests extends SimpleIOSuite {
   private val invalidSchemaId = SchemaId("invalid schema")
 
   private val validSchema = Json.obj()
+  private val validJsonDocument = Json.obj()
+  private val invalidJsonDocument = Json.fromString("invalid")
 
-  private val fakeAPI: API[IO] =
+  private val fakeServerAPI: API[IO] =
     new API[IO] {
 
       def uploadSchema(schemaId: SchemaId, schema: String): IO[ActionResult] = {
@@ -47,9 +50,17 @@ object RouteTests extends SimpleIOSuite {
         responses(schemaId)
       }
 
+      def validateDocument(schemaId: SchemaId, document: Json): IO[ActionResult] = {
+        if (document === validJsonDocument)
+          ActionResult.validateDocumentSuccess(schemaId)
+        else
+          ActionResult
+            .validateDocumentError(schemaId, "JSON Validation failed")
+      }.pure[IO]
+
     }
 
-  private val http4sClient = Client.fromHttpApp(HttpServer.routes[IO](fakeAPI))
+  private val http4sClient = Client.fromHttpApp(HttpServer.routes[IO](fakeServerAPI))
 
   private val client = API.client(http4sClient, Uri())
   private val clientRaw = API.clientRaw[IO](Uri())
@@ -58,7 +69,8 @@ object RouteTests extends SimpleIOSuite {
     client
       .uploadSchema(validSchemaId, "{}")
       .map { uploadResult =>
-        assert(uploadResult.status == ActionStatus.Success)
+        assert(uploadResult.isSuccess) &&
+        assert(uploadResult.action == ActionKind.UploadSchema)
       }
   }
 
@@ -66,9 +78,8 @@ object RouteTests extends SimpleIOSuite {
     client
       .uploadSchema(invalidSchemaId, "{")
       .map { uploadResult =>
-        assert(
-          uploadResult.status == ActionStatus.Error
-        )
+        assert(uploadResult.status == ActionStatus.Error) &&
+        assert(uploadResult.action == ActionKind.UploadSchema)
       }
   }
 
@@ -88,5 +99,23 @@ object RouteTests extends SimpleIOSuite {
     client
       .downloadSchema(nonExistentSchemaId)
       .map(assert.eql(_, None))
+  }
+
+  test("Validate document: successful") {
+    client
+      .validateDocument(validSchemaId, validJsonDocument)
+      .map { validateResult =>
+        assert(validateResult.isSuccess) &&
+        assert(validateResult.action == ActionKind.ValidateDocument)
+      }
+  }
+
+  test("Validate document: failed") {
+    client
+      .validateDocument(validSchemaId, invalidJsonDocument)
+      .map { validateResult =>
+        assert(validateResult.status == ActionStatus.Error) &&
+        assert(validateResult.action == ActionKind.ValidateDocument)
+      }
   }
 }

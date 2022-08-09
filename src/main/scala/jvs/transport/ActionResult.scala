@@ -28,11 +28,30 @@ object ActionResult {
     message = None,
   )
 
+  def validateDocumentSuccess(
+    schemaId: SchemaId
+  ): ActionResult = ActionResult(
+    ActionKind.ValidateDocument,
+    schemaId,
+    ActionStatus.Success,
+    message = None,
+  )
+
   def uploadSchemaError(
     schemaId: SchemaId,
     message: String,
   ): ActionResult = ActionResult(
     ActionKind.UploadSchema,
+    schemaId,
+    ActionStatus.Error,
+    message = Some(message),
+  )
+
+  def validateDocumentError(
+    schemaId: SchemaId,
+    message: String,
+  ): ActionResult = ActionResult(
+    ActionKind.ValidateDocument,
     schemaId,
     ActionStatus.Error,
     message = Some(message),
@@ -46,13 +65,18 @@ sealed trait ActionKind extends Product with Serializable
 
 object ActionKind {
   case object UploadSchema extends ActionKind
+  case object ValidateDocument extends ActionKind
 
   implicit val codec: Codec[ActionKind] = Codec.from(
     Decoder[String].emap {
-      case "uploadSchema" => UploadSchema.asRight
-      case other          => other.asLeft
+      case "uploadSchema"     => UploadSchema.asRight
+      case "validateDocument" => ValidateDocument.asRight
+      case other              => other.asLeft
     },
-    { case UploadSchema => "uploadSchema".asJson },
+    {
+      case UploadSchema     => "uploadSchema".asJson
+      case ValidateDocument => "validateDocument".asJson
+    },
   )
 
 }

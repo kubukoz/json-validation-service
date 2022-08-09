@@ -15,8 +15,11 @@ object APITests extends SimpleIOSuite {
   private implicit val logger = NoOpLogger[IO]
 
   private val aSchema = Json.obj()
-  private val aSchemaId = SchemaId("a schema id")
   private val anExistingSchemaId = SchemaId("a schema that exists")
+  private val nonExistentSchemaId = SchemaId("a schema that doesn't exist")
+
+  private val aValidDocument = Json.obj()
+  private val anInvalidDocument = Json.fromString("invalid document")
 
   private implicit val schemaService: SchemaService[IO] =
     new SchemaService[IO] {
@@ -33,20 +36,28 @@ object APITests extends SimpleIOSuite {
         else
           IO.raiseError(AppError.SchemaNotFound)
 
+      def validateDocument(schemaId: SchemaId, document: Json): IO[Unit] =
+        getSchema(schemaId) *> {
+          if (document == aValidDocument)
+            IO.unit
+          else
+            IO.raiseError(AppError.InvalidDocument(List("expected string")))
+        }
+
     }
 
   private val api = API.server[IO]
 
   test("Upload schema successful") {
-    api.uploadSchema(aSchemaId, "{}").map { result =>
+    api.uploadSchema(nonExistentSchemaId, "{}").map { result =>
       assert(result.status == ActionStatus.Success)
     }
   }
 
   test("Upload schema fails: invalid JSON") {
-    api.uploadSchema(aSchemaId, "invalid json").map { result =>
+    api.uploadSchema(nonExistentSchemaId, "invalid json").map { result =>
       assert(result.status == ActionStatus.Error) &&
-      assert(result.message == Some("Invalid JSON"))
+      assert.eql(result.message, Some("Invalid JSON"))
     }
   }
 
@@ -55,7 +66,7 @@ object APITests extends SimpleIOSuite {
 
     perform.map { result =>
       assert(result.status == ActionStatus.Error) &&
-      assert(result.message == Some("Schema already exists"))
+      assert.eql(result.message, Some("Schema already exists"))
     }
   }
 
@@ -69,9 +80,35 @@ object APITests extends SimpleIOSuite {
 
   test("Download schema: nonexistent entry") {
     api
-      .downloadSchema(aSchemaId)
+      .downloadSchema(nonExistentSchemaId)
       .map { result =>
         assert(result.isEmpty)
+      }
+  }
+
+  test("Validate document: success") {
+    api
+      .validateDocument(anExistingSchemaId, aValidDocument)
+      .map { result =>
+        assert(result.status == ActionStatus.Success)
+      }
+  }
+
+  test("Validate document: invalid document") {
+    api
+      .validateDocument(anExistingSchemaId, anInvalidDocument)
+      .map { result =>
+        assert(result.status == ActionStatus.Error) &&
+        assert.eql(result.message, Some("Invalid document: expected string"))
+      }
+  }
+
+  test("Validate document: schema not found") {
+    api
+      .validateDocument(nonExistentSchemaId, aValidDocument)
+      .map { result =>
+        assert(result.status == ActionStatus.Error) &&
+        assert.eql(result.message, Some("Schema not found"))
       }
   }
 }
