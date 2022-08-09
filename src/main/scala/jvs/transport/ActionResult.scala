@@ -47,6 +47,16 @@ object ActionResult {
     message = Some(message),
   )
 
+  def downloadSchemaError(
+    schemaId: SchemaId,
+    message: String,
+  ): ActionResult = ActionResult(
+    ActionKind.DownloadSchema,
+    schemaId,
+    ActionStatus.Error,
+    message = Some(message),
+  )
+
   def validateDocumentError(
     schemaId: SchemaId,
     message: String,
@@ -65,16 +75,19 @@ sealed trait ActionKind extends Product with Serializable
 
 object ActionKind {
   case object UploadSchema extends ActionKind
+  case object DownloadSchema extends ActionKind
   case object ValidateDocument extends ActionKind
 
   implicit val codec: Codec[ActionKind] = Codec.from(
     Decoder[String].emap {
       case "uploadSchema"     => UploadSchema.asRight
+      case "downloadSchema"   => DownloadSchema.asRight
       case "validateDocument" => ValidateDocument.asRight
       case other              => other.asLeft
     },
     {
       case UploadSchema     => "uploadSchema".asJson
+      case DownloadSchema   => "downloadSchema".asJson
       case ValidateDocument => "validateDocument".asJson
     },
   )

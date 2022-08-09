@@ -41,10 +41,13 @@ object RouteTests extends SimpleIOSuite {
         IO.pure(responses(schemaId))
       }
 
-      def downloadSchema(schemaId: SchemaId): IO[Option[Json]] = {
+      def downloadSchema(schemaId: SchemaId): IO[Either[ActionResult, Json]] = {
         val responses = Map(
-          validSchemaId -> validSchema.some.pure[IO],
-          nonExistentSchemaId -> none.pure[IO],
+          validSchemaId -> validSchema.asRight.pure[IO],
+          nonExistentSchemaId -> ActionResult
+            .downloadSchemaError(schemaId, "Schema not found")
+            .asLeft
+            .pure[IO],
         )
 
         responses(schemaId)
@@ -92,13 +95,19 @@ object RouteTests extends SimpleIOSuite {
   test("Download schema successfully") {
     client
       .downloadSchema(validSchemaId)
-      .map(assert.eql(_, validSchema.some))
+      .map { result =>
+        assert(result == validSchema.asRight)
+      }
   }
 
   test("Download schema: not found") {
     client
       .downloadSchema(nonExistentSchemaId)
-      .map(assert.eql(_, None))
+      .map { result =>
+        assert(result.isLeft) &&
+        assert(result.leftMap(_.status) == ActionStatus.Error.asLeft) &&
+        assert(result.leftMap(_.action) == ActionKind.DownloadSchema.asLeft)
+      }
   }
 
   test("Validate document: successful") {
