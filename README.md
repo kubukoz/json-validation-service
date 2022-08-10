@@ -66,3 +66,7 @@ An example e2e test run with a modified URL would look like this:
 ```
 E2E_BASE_URL=https://example.com sbt e2e/E2EConfig/test
 ```
+
+## Deployment
+
+For demonstration purposes, the application is being deployed to https://json-validation.herokuapp.com on every commit to main.
