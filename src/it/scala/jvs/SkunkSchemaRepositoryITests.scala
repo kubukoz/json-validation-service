@@ -16,9 +16,13 @@ import skunk.implicits._
 import weaver._
 
 import scala.concurrent.duration._
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.Logger
 
-object SkunkSchemaRepositoryTests extends IOSuite {
+object SkunkSchemaRepositoryITests extends IOSuite {
   type Res = SchemaRepository[IO]
+
+  implicit val logger = Slf4jLogger.getLogger[IO]
 
   val sharedResource: Resource[IO, Res] = DatabaseConfig
     .config[IO]
@@ -37,10 +41,10 @@ object SkunkSchemaRepositoryTests extends IOSuite {
     fs2
       .Stream
       .retry(
-        attempt,
+        attempt.onError { case e => Logger[IO].error(e)("Skunk connection failed") },
         delay = 1.second,
         nextDelay = _ * 2,
-        maxAttempts = 10,
+        maxAttempts = 7,
       )
       .compile
       .drain
