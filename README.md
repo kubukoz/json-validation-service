@@ -71,3 +71,5 @@ E2E_BASE_URL=https://json-validation.herokuapp.com sbt e2e/E2EConfig/test
 
 For demonstration purposes, the application is being deployed to https://json-validation.herokuapp.com on every commit to main.
 For example, visit [/schema/config-schema](https://json-validation.herokuapp.com/schema/config-schema) in your brower.
+
+After each deployment, e2e tests are run against the Heroku instance.
