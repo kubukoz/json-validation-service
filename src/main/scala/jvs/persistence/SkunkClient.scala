@@ -6,7 +6,6 @@ import fs2.io.net.Network
 import natchez.Trace.Implicits.noop
 import skunk.Session
 import skunk.util.Pool
-import skunk.SSL
 
 object SkunkClient {
 
@@ -19,7 +18,7 @@ object SkunkClient {
     database = config.database,
     password = config.password.some,
     max = config.maxConnections,
-    ssl = SSL.System,
+    ssl = config.ssl,
   )
 
 }

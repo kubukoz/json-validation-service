@@ -5,6 +5,7 @@ import ciris.ConfigValue
 import com.comcast.ip4s._
 
 import jvs.config.ConfigDecoders._
+import skunk.SSL
 
 sealed trait PersistenceConfig extends Product with Serializable
 
@@ -31,12 +32,21 @@ final case class DatabaseConfig(
   database: String,
   password: String,
   maxConnections: Int,
+  ssl: SSL,
 )
 
 object DatabaseConfig {
 
   def config[F[_]]: ConfigValue[F, DatabaseConfig] = {
     import ciris._
+
+    val ssl = env("DB_USE_SSL")
+      .as[Boolean]
+      .default(false)
+      .map {
+        case true  => SSL.System
+        case false => SSL.None
+      }
 
     (
       env("DB_HOST").as[Host].default(host"localhost"),
@@ -45,6 +55,7 @@ object DatabaseConfig {
       env("DB_DATABASE").as[String].default("postgres"),
       env("DB_PASSWORD").as[String].default("example"),
       env("DB_MAX_CONNECTIONS").as[Int].default(10),
+      ssl,
     ).parMapN(apply)
   }
 
