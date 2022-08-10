@@ -45,7 +45,7 @@ The application can be configured with environment variables. At the time of wri
 
 ```
 HTTP_HOST - the hostname to bind the server to. Default: 0.0.0.0
-HTTP_PORT - the TCP port to bind the server to. Default: 4000
+HTTP_PORT or PORT - the TCP port to bind the server to. Default: 4000
 
 DB_IN_MEMORY - whether to use an in-memory persistence method. Any value is allowed. Default: <undefined>
 DB_HOST - the hostname of the database server. Default: localhost
