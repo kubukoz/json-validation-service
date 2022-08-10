@@ -1,10 +1,23 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 ThisBuild / scalaVersion := "2.13.8"
-ThisBuild / githubWorkflowPublishTargetBranches := List(RefPredicate.Equals(Ref.Branch("main")))
+ThisBuild / githubWorkflowPublishTargetBranches := List(
+  RefPredicate.Equals(Ref.Branch("main"))
+)
 ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("ci")))
 ThisBuild / githubWorkflowPublish := List(WorkflowStep.Sbt(List("deploy")))
-ThisBuild / githubWorkflowEnv += "HEROKU_API_KEY" -> s"$${{ secrets.HEROKU_API_KEY }}"
+ThisBuild / githubWorkflowGeneratedCI := (ThisBuild / githubWorkflowGeneratedCI).value.map {
+  case job if job.id == "publish" =>
+    job
+      .copy(
+        env =
+          job.env ++ Map(
+            "E2E_BASE_URL" -> s"https://${(Compile / herokuAppName).value}.herokuapp.com",
+            "HEROKU_API_KEY" -> s"$${{ secrets.HEROKU_API_KEY }}",
+          )
+      )
+  case job => job
+}
 
 val commonSettings = Seq(
   organization := "com.kubukoz.jvs",
@@ -64,7 +77,7 @@ val root = project
       List("test", "Docker/publishLocal", "composeUp", "IntegrationTest/test", "e2e/E2EConfig/test")
         .mkString(";"),
     ),
-    addCommandAlias("deploy", "stage;deployHeroku"),
+    addCommandAlias("deploy", List("stage", "deployHeroku", "e2e/E2EConfig/test").mkString(";")),
   )
   .settings(
     Compile / herokuAppName := "json-validation"
