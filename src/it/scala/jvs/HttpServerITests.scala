@@ -1,20 +1,19 @@
 package jvs
 
-import weaver._
-import jvs.http.HttpServer
-import org.http4s.HttpRoutes
 import cats.effect.IO
-import jvs.http.HttpConfig
-import com.comcast.ip4s._
-import org.http4s.HttpApp
-import org.typelevel.log4cats.noop.NoOpLogger
-import org.http4s.ember.client.EmberClientBuilder
-import org.http4s.client.dsl.io._
 import cats.implicits._
-import org.http4s.Method.GET
+import com.comcast.ip4s._
 import io.circe.Json
-import org.http4s.circe.CirceEntityCodec._
+import jvs.http.HttpConfig
+import jvs.http.HttpServer
+import org.http4s.HttpApp
+import org.http4s.Method.GET
 import org.http4s.Status
+import org.http4s.circe.CirceEntityCodec._
+import org.http4s.client.dsl.io._
+import org.http4s.ember.client.EmberClientBuilder
+import org.typelevel.log4cats.noop.NoOpLogger
+import weaver._
 
 object HttpServerITests extends SimpleIOSuite {
   implicit val logger = NoOpLogger.apply[IO]
