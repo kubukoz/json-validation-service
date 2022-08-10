@@ -2,7 +2,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 ThisBuild / scalaVersion := "2.13.8"
 ThisBuild / githubWorkflowPublishTargetBranches := List(
-  RefPredicate.Equals(Ref.Branch("e2e-deploy"))
+  RefPredicate.Equals(Ref.Branch("main"))
 )
 ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("ci")))
 ThisBuild / githubWorkflowPublish := List(WorkflowStep.Sbt(List("deploy")))
