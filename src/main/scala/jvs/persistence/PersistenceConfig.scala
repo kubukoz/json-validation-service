@@ -6,6 +6,7 @@ import com.comcast.ip4s._
 
 import jvs.config.ConfigDecoders._
 import skunk.SSL
+import javax.net.ssl.SSLContext
 
 sealed trait PersistenceConfig extends Product with Serializable
 
@@ -44,7 +45,12 @@ object DatabaseConfig {
       .as[Boolean]
       .default(false)
       .map {
-        case true  => SSL.System
+        case true =>
+          // Hack: this trusts all certificates.
+          // Doing this properly (adding the EC2 certificate to the trust store)
+          // was considered too time-consuming for the purposes of this task.
+          SSL.Trusted
+
         case false => SSL.None
       }
 
