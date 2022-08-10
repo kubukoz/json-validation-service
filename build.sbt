@@ -1,8 +1,10 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 ThisBuild / scalaVersion := "2.13.8"
-ThisBuild / githubWorkflowPublishTargetBranches := Nil
+ThisBuild / githubWorkflowPublishTargetBranches := List(RefPredicate.Equals(Ref.Branch("main")))
 ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("ci")))
+ThisBuild / githubWorkflowPublish := List(WorkflowStep.Sbt(List("deploy")))
+ThisBuild / githubWorkflowEnv += "HEROKU_API_KEY" -> s"$${{ secrets.HEROKU_API_KEY }}"
 
 val commonSettings = Seq(
   organization := "com.kubukoz.jvs",
@@ -62,6 +64,10 @@ val root = project
       List("test", "Docker/publishLocal", "composeUp", "IntegrationTest/test", "e2e/E2EConfig/test")
         .mkString(";"),
     ),
+    addCommandAlias("deploy", "stage;deployHeroku"),
+  )
+  .settings(
+    Compile / herokuAppName := "json-validation"
   )
   .configs(IntegrationTest)
   .settings(Defaults.itSettings)

@@ -45,7 +45,7 @@ The application can be configured with environment variables. At the time of wri
 
 ```
 HTTP_HOST - the hostname to bind the server to. Default: 0.0.0.0
-HTTP_PORT - the TCP port to bind the server to. Default: 4000
+HTTP_PORT or PORT - the TCP port to bind the server to. Default: 4000
 
 DB_IN_MEMORY - whether to use an in-memory persistence method. Any value is allowed. Default: <undefined>
 DB_HOST - the hostname of the database server. Default: localhost
@@ -66,3 +66,8 @@ An example e2e test run with a modified URL would look like this:
 ```
 E2E_BASE_URL=https://example.com sbt e2e/E2EConfig/test
 ```
+
+## Deployment
+
+For demonstration purposes, the application is being deployed to https://json-validation.herokuapp.com on every commit to main.
+For example, visit [/schema/config-schema](https://json-validation.herokuapp.com/schema/config-schema) in your brower.

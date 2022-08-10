@@ -18,6 +18,7 @@ object SkunkClient {
     database = config.database,
     password = config.password.some,
     max = config.maxConnections,
+    ssl = config.ssl,
   )
 
 }

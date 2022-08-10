@@ -14,7 +14,7 @@ object HttpConfig {
 
     (
       env("HTTP_HOST").as[Host].default(host"0.0.0.0"),
-      env("HTTP_PORT").as[Port].default(port"4000"),
+      env("HTTP_PORT").or(env("PORT")).as[Port].default(port"4000"),
     ).parMapN(apply)
   }
 
