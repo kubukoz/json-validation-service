@@ -29,6 +29,8 @@ docker-compose up -d
 
 By default, the application runs on `localhost:4000`.
 
+To restart, run `docker-compose restart`.
+
 ## Examples of usage
 
 Assuming usage of httpie:
