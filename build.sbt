@@ -65,6 +65,9 @@ val root = project
     ),
     addCommandAlias("deploy", "stage;deployHeroku"),
   )
+  .settings(
+    Compile / herokuAppName := "json-validation"
+  )
   .configs(IntegrationTest)
   .settings(Defaults.itSettings)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
