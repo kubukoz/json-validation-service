@@ -76,8 +76,9 @@ val root = project
     ),
     addCommandAlias(
       "ci",
-      List("test", "Docker/publishLocal", "composeUp", "IntegrationTest/test", "e2e/E2EConfig/test")
-        .mkString(";"),
+      // List("test", "Docker/publishLocal", "composeUp", "IntegrationTest/test", "e2e/E2EConfig/test")
+      //   .mkString(";"),
+      "exit",
     ),
     addCommandAlias("deploy", List("stage", "deployHeroku", "e2e/E2EConfig/test").mkString(";")),
   )
