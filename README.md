@@ -38,3 +38,31 @@ http post :4000/schema/config-schema < ./e2e/src/e2e/resources/examples/config-s
 http :4000/schema/config-schema
 http post :4000/validate/config-schema < ./e2e/src/e2e/resources/examples/config.json
 ```
+
+## Configuration
+
+The application can be configured with environment variables. At the time of writing, here's a full list:
+
+```
+HTTP_HOST - the hostname to bind the server to. Default: 0.0.0.0
+HTTP_PORT - the TCP port to bind the server to. Default: 4000
+
+DB_IN_MEMORY - whether to use an in-memory persistence method. Any value is allowed. Default: <undefined>
+DB_HOST - the hostname of the database server. Default: localhost
+DB_PORT - the port of the database server. Default: 5432
+DB_USER - the username to be used by the database client. Default: postgres
+DB_PASSWORD - the username to be used by the database client. Default: example
+DB_MAX_CONNECTIONS - the maximum amount of connections for the database client. Default: 10
+```
+
+Additionally, e2e tests can be configured:
+
+```
+E2E_BASE_URL - the base URL to use when executing calls against a server. Default: http://localhost:4000
+```
+
+An example e2e test run with a modified URL would look like this:
+
+```
+E2E_BASE_URL=https://example.com sbt e2e/E2EConfig/test
+```
