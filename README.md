@@ -61,10 +61,10 @@ Additionally, e2e tests can be configured:
 E2E_BASE_URL - the base URL to use when executing calls against a server. Default: http://localhost:4000
 ```
 
-An example e2e test run with a modified URL would look like this:
+An example e2e test run against the Heroku instance would look like this:
 
 ```
-E2E_BASE_URL=https://example.com sbt e2e/E2EConfig/test
+E2E_BASE_URL=https://json-validation.herokuapp.com sbt e2e/E2EConfig/test
 ```
 
 ## Deployment
