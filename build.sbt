@@ -1,8 +1,9 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 ThisBuild / scalaVersion := "2.13.8"
-ThisBuild / githubWorkflowPublishTargetBranches := Nil
+ThisBuild / githubWorkflowPublishTargetBranches := List(RefPredicate.Equals("deploy"))
 ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("ci")))
+ThisBuild / githubWorkflowPublish := List(WorkflowStep.Sbt(List("deploy")))
 
 val commonSettings = Seq(
   organization := "com.kubukoz.jvs",
@@ -62,6 +63,7 @@ val root = project
       List("test", "Docker/publishLocal", "composeUp", "IntegrationTest/test", "e2e/E2EConfig/test")
         .mkString(";"),
     ),
+    addCommandAlias("deploy", "stage;deployHeroku"),
   )
   .configs(IntegrationTest)
   .settings(Defaults.itSettings)
