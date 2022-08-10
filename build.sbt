@@ -6,19 +6,17 @@ ThisBuild / githubWorkflowPublishTargetBranches := List(
 )
 ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("ci")))
 ThisBuild / githubWorkflowPublish := List(WorkflowStep.Sbt(List("deploy")))
-ThisBuild / githubWorkflowGeneratedCI := {
-  (ThisBuild / githubWorkflowGeneratedCI).value.map {
-    case job if job.id == "publish" =>
-      job
-        .copy(
-          env =
-            job.env ++ Map(
-              "E2E_BASE_URL" -> s"https://${(Compile / herokuAppName).value}.herokuapp.com",
-              "HEROKU_API_KEY" -> s"$${{ secrets.HEROKU_API_KEY }}",
-            )
-        )
-    case job => job
-  }
+ThisBuild / githubWorkflowGeneratedCI := (ThisBuild / githubWorkflowGeneratedCI).value.map {
+  case job if job.id == "publish" =>
+    job
+      .copy(
+        env =
+          job.env ++ Map(
+            "E2E_BASE_URL" -> s"https://${(Compile / herokuAppName).value}.herokuapp.com",
+            "HEROKU_API_KEY" -> s"$${{ secrets.HEROKU_API_KEY }}",
+          )
+      )
+  case job => job
 }
 
 val commonSettings = Seq(
