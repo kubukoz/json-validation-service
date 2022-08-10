@@ -6,7 +6,6 @@ import com.comcast.ip4s._
 
 import jvs.config.ConfigDecoders._
 import skunk.SSL
-import javax.net.ssl.SSLContext
 
 sealed trait PersistenceConfig extends Product with Serializable
 
