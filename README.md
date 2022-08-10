@@ -10,7 +10,7 @@ POST    /validate/SCHEMAID      - Validate a JSON document against the JSON Sche
 ```
 
 The implementation uses http4s as the main HTTP layer and stores the data in a Postgres database using Skunk.
-An in-memory storage implementation is available for testing purposes.
+An in-memory storage implementation is available for testing purposes. It can be enabled by setting the `DB_IN_MEMORY` environment variable.
 
 ## Running
 
