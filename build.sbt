@@ -55,6 +55,7 @@ val root = project
       "org.tpolecat" %% "skunk-circe" % "0.2.3",
       "com.github.java-json-tools" % "json-schema-validator" % "2.2.14",
       "com.disneystreaming" %% "weaver-cats" % "0.7.14" % "it,test",
+      "org.http4s" %% "http4s-ember-client" % "0.23.14" % "it",
     ),
     addCommandAlias(
       "ci",

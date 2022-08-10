@@ -4,28 +4,38 @@ import cats.effect.Concurrent
 import cats.effect.Resource
 import cats.effect.kernel.Async
 import cats.implicits._
+import io.circe.Json
 import jvs.http.HttpConfig
 import jvs.model.SchemaId
 import org.http4s.HttpApp
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec._
-import org.http4s.circe.middleware.JsonDebugErrorHandler
 import org.http4s.dsl.Http4sDsl
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Server
-
-import util.chaining._
-import io.circe.Json
+import org.typelevel.log4cats.Logger
+import org.http4s.Response
 
 object HttpServer {
 
-  def run[F[_]: Async](route: HttpApp[F], config: HttpConfig): Resource[F, Server] =
+  def run[F[_]: Async: Logger](route: HttpApp[F], config: HttpConfig): Resource[F, Server] =
     EmberServerBuilder
       .default[F]
       .withPort(config.port)
       .withHost(config.host)
       .withHttpApp(route)
+      .withErrorHandler(errorHandler[F])
       .build
+
+  private def errorHandler[F[_]: Concurrent: Logger]: PartialFunction[Throwable, F[Response[F]]] = {
+    val dsl = new Http4sDsl[F] {}
+    import dsl._
+
+    { case e =>
+      Logger[F].error(e)("Unexpected error while processing request") *>
+        InternalServerError(())
+    }
+  }
 
   def routes[F[_]: Concurrent](api: API[F]): HttpApp[F] = {
     val dsl = new Http4sDsl[F] {}
@@ -67,7 +77,6 @@ object HttpServer {
 
       }
       .orNotFound
-      .pipe(JsonDebugErrorHandler[F, F](_))
   }
 
 }
