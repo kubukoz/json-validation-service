@@ -25,6 +25,7 @@ val commonSettings = Seq(
   scalacOptions += "-Xsource:3.0",
   testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
   IntegrationTest / testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
+  scalacOptions ++= Seq("-release", "8"),
   libraryDependencies ++= Seq(
     "is.cir" %% "ciris" % "2.3.3",
     "ch.qos.logback" % "logback-classic" % "1.2.11",
