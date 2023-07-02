@@ -58,7 +58,7 @@ object DatabaseConfig {
       env("POSTGRES_PORT").as[Port].default(port"5432"),
       env("POSTGRES_USERNAME").as[String].default("postgres"),
       env("POSTGRES_PASSWORD").as[String].default("example"),
-      env("DB_DATABASE").as[String].default("postgres"),
+      env("POSTGRES_DATABASE").as[String].default("postgres"),
       env("DB_MAX_CONNECTIONS").as[Int].default(10),
       ssl,
     ).parMapN(apply)
