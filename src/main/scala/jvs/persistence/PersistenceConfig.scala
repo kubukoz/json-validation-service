@@ -54,11 +54,11 @@ object DatabaseConfig {
       }
 
     (
-      env("DB_HOST").as[Host].default(host"localhost"),
-      env("DB_PORT").as[Port].default(port"5432"),
-      env("DB_USER").as[String].default("postgres"),
+      env("POSTGRES_HOST").as[Host].default(host"localhost"),
+      env("POSTGRES_PORT").as[Port].default(port"5432"),
+      env("POSTGRES_USERNAME").as[String].default("postgres"),
+      env("POSTGRES_PASSWORD").as[String].default("example"),
       env("DB_DATABASE").as[String].default("postgres"),
-      env("DB_PASSWORD").as[String].default("example"),
       env("DB_MAX_CONNECTIONS").as[Int].default(10),
       ssl,
     ).parMapN(apply)
