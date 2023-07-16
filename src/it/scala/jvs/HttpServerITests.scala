@@ -13,10 +13,11 @@ import org.http4s.circe.CirceEntityCodec._
 import org.http4s.client.dsl.io._
 import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.noop.NoOpLogger
+import org.typelevel.log4cats.Logger
 import weaver._
 
 object HttpServerITests extends SimpleIOSuite {
-  implicit val logger = NoOpLogger.apply[IO]
+  given Logger[IO] = NoOpLogger.apply[IO]
 
   test("Global error handler hides exception message") {
     val randomPort = port"0"

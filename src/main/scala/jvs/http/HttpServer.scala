@@ -5,7 +5,6 @@ import cats.effect.Resource
 import cats.effect.kernel.Async
 import cats.implicits._
 import io.circe.Json
-import jvs.http.HttpConfig
 import jvs.model.SchemaId
 import org.http4s.HttpApp
 import org.http4s.HttpRoutes

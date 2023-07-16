@@ -12,9 +12,10 @@ import weaver._
 import io.circe.Json
 import cats.implicits._
 import jvs.transport.ActionKind
+import org.typelevel.log4cats.Logger
 
 object APITests extends SimpleIOSuite {
-  private implicit val logger = NoOpLogger[IO]
+  private given Logger[IO] = NoOpLogger[IO]
 
   private val aSchema = Json.obj()
   private val anExistingSchemaId = SchemaId("a schema that exists")

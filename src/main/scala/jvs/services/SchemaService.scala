@@ -14,6 +14,7 @@ import jvs.persistence.SchemaRepository
 import jvs.services.AppError
 
 import scala.jdk.CollectionConverters._
+import com.fasterxml.jackson.databind.node.ObjectNode
 
 trait SchemaService[F[_]] {
   def persistSchema(schema: Schema): F[Unit]
@@ -57,11 +58,12 @@ object SchemaService {
     }
 
   private def circeToJackson(circeJson: Json): JsonNode = {
+    val om = new ObjectMapper()
     val nf = JsonNodeFactory.instance
 
     def circeNumberToJackson(
       num: JsonNumber
-    ): JsonNode = new ObjectMapper().readTree(num.toString())
+    ): JsonNode = om.readTree(num.toString())
 
     circeJson.fold(
       jsonNull = nf.nullNode(),
@@ -74,7 +76,7 @@ object SchemaService {
         },
       jsonObject =
         _.toList.foldLeft(nf.objectNode()) { case (o, (key, item)) =>
-          o.set(key, circeToJackson(item))
+          o.set[ObjectNode](key, circeToJackson(item))
         },
     )
   }

@@ -8,7 +8,6 @@ import cats.effect.kernel.Resource
 import cats.implicits._
 import io.circe.Json
 import jvs.model._
-import jvs.persistence.PersistenceError
 import skunk.Session
 import skunk._
 import skunk.implicits._
