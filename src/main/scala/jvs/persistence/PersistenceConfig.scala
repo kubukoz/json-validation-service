@@ -6,6 +6,7 @@ import com.comcast.ip4s._
 
 import jvs.config.ConfigDecoders._
 import skunk.SSL
+import ciris.Secret
 
 sealed trait PersistenceConfig extends Product with Serializable
 
@@ -30,7 +31,7 @@ final case class DatabaseConfig(
   port: Port,
   user: String,
   database: String,
-  password: String,
+  password: Secret[String],
   maxConnections: Int,
   ssl: SSL,
 )
@@ -57,8 +58,8 @@ object DatabaseConfig {
       env("POSTGRES_HOST").as[Host].default(host"localhost"),
       env("POSTGRES_PORT").as[Port].default(port"5432"),
       env("POSTGRES_USERNAME").as[String].default("postgres"),
-      env("POSTGRES_PASSWORD").as[String].default("example"),
       env("POSTGRES_DATABASE").as[String].default("postgres"),
+      env("POSTGRES_PASSWORD").as[String].default("example").secret,
       env("DB_MAX_CONNECTIONS").as[Int].default(10),
       ssl,
     ).parMapN(apply)
