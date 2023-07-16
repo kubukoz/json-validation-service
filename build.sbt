@@ -1,6 +1,6 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / scalaVersion := "3.3.0"
 ThisBuild / githubWorkflowPublishTargetBranches := List(
   RefPredicate.Equals(Ref.Branch("main"))
 )
@@ -23,8 +23,6 @@ val commonSettings = Seq(
   organization := "com.kubukoz.jvs",
   scalacOptions -= "-Xfatal-warnings",
   scalacOptions += "-Xsource:3.0",
-  testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
-  IntegrationTest / testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
   scalacOptions ++= Seq("-release", "8"),
   libraryDependencies ++= Seq(
     "is.cir" %% "ciris" % "3.2.0",
@@ -32,9 +30,11 @@ val commonSettings = Seq(
     "io.circe" %% "circe-parser" % "0.14.5",
     "org.typelevel" %% "log4cats-noop" % "2.6.0" % "it,test",
     "io.circe" %% "circe-literal" % "0.14.5" % "it,test",
-    compilerPlugin("org.polyvariant" % "better-tostring" % "0.3.16" cross CrossVersion.full),
-    compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
+    compilerPlugin("org.polyvariant" % "better-tostring" % "0.3.17" cross CrossVersion.full),
   ),
+  // workaround for https://github.com/heroku/heroku-sbt-plugin/issues/60
+  libraryDependencies -=
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "runtime",
 )
 
 val E2EConfig = config("e2e").extend(Test)
@@ -66,7 +66,6 @@ val root = project
       "org.http4s" %% "http4s-dsl" % "0.23.22",
       "org.http4s" %% "http4s-ember-server" % "0.23.22",
       "org.http4s" %% "http4s-client" % "0.23.22",
-      "io.circe" %% "circe-generic-extras" % "0.14.3",
       "org.tpolecat" %% "skunk-core" % "0.6.0",
       "org.tpolecat" %% "skunk-circe" % "0.6.0",
       "com.github.java-json-tools" % "json-schema-validator" % "2.2.14",

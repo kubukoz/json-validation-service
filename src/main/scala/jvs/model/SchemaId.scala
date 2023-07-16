@@ -1,10 +1,19 @@
 package jvs.model
 
 import io.circe.Codec
-import io.circe.generic.extras.semiauto._
 
-final case class SchemaId(value: String) extends AnyVal
+import cats.implicits.*
+
+final case class SchemaId(value: String)
 
 object SchemaId {
-  implicit val codec: Codec[SchemaId] = deriveUnwrappedCodec
+
+  implicit val codec: Codec[SchemaId] =
+    Codec
+      .from(
+        io.circe.Decoder[String],
+        io.circe.Encoder[String],
+      )
+      .imap(SchemaId(_))(_.value)
+
 }
