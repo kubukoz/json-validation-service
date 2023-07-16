@@ -6,18 +6,18 @@ ThisBuild / githubWorkflowPublishTargetBranches := List(
 )
 ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("ci")))
 ThisBuild / githubWorkflowPublish := List(WorkflowStep.Sbt(List("deploy")))
-// ThisBuild / githubWorkflowGeneratedCI := (ThisBuild / githubWorkflowGeneratedCI).value.map {
-//   case job if job.id == "publish" =>
-//     job
-//       .copy(
-//         env =
-//           job.env ++ Map(
-//             "E2E_BASE_URL" -> s"https://${(Compile / herokuAppName).value}.herokuapp.com",
-//             "HEROKU_API_KEY" -> s"$${{ secrets.HEROKU_API_KEY }}",
-//           )
-//       )
-//   case job => job
-// }
+ThisBuild / githubWorkflowGeneratedCI := (ThisBuild / githubWorkflowGeneratedCI).value.map {
+  case job if job.id == "publish" =>
+    job
+      .copy(
+        env =
+          job.env ++ Map(
+            "E2E_BASE_URL" -> s"https://${(Compile / herokuAppName).value}.herokuapp.com",
+            "HEROKU_API_KEY" -> s"$${{ secrets.HEROKU_API_KEY }}",
+          )
+      )
+  case job => job
+}
 
 val commonSettings = Seq(
   organization := "com.kubukoz.jvs",
@@ -32,6 +32,9 @@ val commonSettings = Seq(
     "io.circe" %% "circe-literal" % "0.14.5" % "it,test",
     compilerPlugin("org.polyvariant" % "better-tostring" % "0.3.17" cross CrossVersion.full),
   ),
+  // workaround for https://github.com/heroku/heroku-sbt-plugin/issues/60
+  libraryDependencies -=
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "runtime",
 )
 
 val E2EConfig = config("e2e").extend(Test)
@@ -76,9 +79,9 @@ val root = project
     ),
     addCommandAlias("deploy", List("stage", "deployHeroku", "e2e/E2EConfig/test").mkString(";")),
   )
-  // .settings(
-  //   Compile / herokuAppName := "json-validation"
-  // )
+  .settings(
+    Compile / herokuAppName := "json-validation"
+  )
   .configs(IntegrationTest)
   .settings(Defaults.itSettings)
   .enablePlugins(JavaAppPackaging, DockerPlugin)

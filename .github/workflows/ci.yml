@@ -74,6 +74,9 @@ jobs:
         scala: [3.3.0]
         java: [temurin@11]
     runs-on: ${{ matrix.os }}
+    env:
+      E2E_BASE_URL: 'https://json-validation.herokuapp.com'
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
     steps:
       - name: Checkout current branch (full)
         uses: actions/checkout@v2
