@@ -22,7 +22,7 @@ import org.typelevel.log4cats.Logger
 object SkunkSchemaRepositoryITests extends IOSuite {
   type Res = SchemaRepository[IO]
 
-  implicit val logger = Slf4jLogger.getLogger[IO]
+  given Logger[IO] = Slf4jLogger.getLogger[IO]
 
   val sharedResource: Resource[IO, Res] = DatabaseConfig
     .config[IO]

@@ -12,7 +12,6 @@ import jvs.services.SchemaService
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import jvs.persistence.PersistenceConfig
-import cats.effect.implicits._
 
 object Main extends ResourceApp.Forever {
   implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]

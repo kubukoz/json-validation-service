@@ -8,7 +8,6 @@ import cats.effect.kernel.Resource
 import cats.implicits._
 import io.circe.Json
 import jvs.model._
-import jvs.persistence.PersistenceError
 import skunk.Session
 import skunk._
 import skunk.implicits._
@@ -49,17 +48,18 @@ object SchemaRepository {
   ): F[SchemaRepository[F]] = {
     object codecs {
 
-      val schemaId = skunk.codec.text.text.gimap[SchemaId]
+      val schemaId = skunk.codec.text.text.to[SchemaId]
 
       val schema: Codec[Schema] =
-        (schemaId ~
-          skunk.circe.codec.json.jsonb)
-          .gimap[Schema]
+        (
+          schemaId
+            *: skunk.circe.codec.json.jsonb
+        ).to[Schema]
 
     }
 
     val initialize = sessionPool
-      .flatMap {
+      .evalMap {
         _.prepare(
           sql"""create table if not exists schemas(id text primary key, schema jsonb not null)""".command
         )
@@ -73,14 +73,14 @@ object SchemaRepository {
           val q = sql"""insert into schemas (id, schema) values (${codecs.schema})""".command
 
           sessionPool
-            .flatMap(_.prepare(q))
+            .evalMap(_.prepare(q))
             .use(_.execute(schema))
             .void
             .adaptErr { case SqlState.UniqueViolation(_) => PersistenceError.Conflict }
         }
 
         def get(id: SchemaId): F[Schema] = sessionPool
-          .flatMap {
+          .evalMap {
             _.prepare(
               sql"""select id, schema from schemas where id = ${codecs.schemaId}"""
                 .query(codecs.schema)

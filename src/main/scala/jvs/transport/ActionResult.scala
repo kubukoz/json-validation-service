@@ -3,9 +3,7 @@ package jvs.transport
 import cats.implicits._
 import io.circe.Codec
 import io.circe.Decoder
-import io.circe.generic.extras.semiauto._
 import io.circe.syntax._
-import jvs.http.CirceConfig._
 import jvs.model.SchemaId
 
 final case class ActionResult(
@@ -13,7 +11,7 @@ final case class ActionResult(
   id: SchemaId,
   status: ActionStatus,
   message: Option[String],
-) {
+) derives Codec.AsObject {
   def isSuccess = status == ActionStatus.Success
 }
 
@@ -66,8 +64,6 @@ object ActionResult {
     ActionStatus.Error,
     message = Some(message),
   )
-
-  implicit val codec: Codec[ActionResult] = deriveConfiguredCodec
 
 }
 

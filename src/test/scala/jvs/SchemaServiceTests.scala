@@ -3,8 +3,7 @@ package jvs
 import cats.effect.IO
 import cats.implicits._
 import io.circe.Json
-import io.circe.literal._
-import io.circe.syntax._
+import io.circe.syntax.*
 import jvs.model.Schema
 import jvs.model.SchemaId
 import jvs.persistence.SchemaRepository
