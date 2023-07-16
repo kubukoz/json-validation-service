@@ -29,7 +29,7 @@ object SkunkSchemaRepositoryITests extends IOSuite {
     .resource
     .flatMap(SkunkClient.connectionPool[IO](_))
     .evalTap(awaitReady)
-    .map(SchemaRepository.skunkBased(_))
+    .evalMap(SchemaRepository.skunkBased(_))
 
   private def awaitReady(
     pool: Resource[IO, Session[IO]]

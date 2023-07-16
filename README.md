@@ -50,11 +50,11 @@ HTTP_HOST - the hostname to bind the server to. Default: 0.0.0.0
 HTTP_PORT or PORT - the TCP port to bind the server to. Default: 4000
 
 DB_IN_MEMORY - whether to use an in-memory persistence method. Any value is allowed. Default: <undefined>
-DB_HOST - the hostname of the database server. Default: localhost
-DB_PORT - the port of the database server. Default: 5432
-DB_USER - the username to be used by the database client. Default: postgres
-DB_PASSWORD - the username to be used by the database client. Default: example
-DB_MAX_CONNECTIONS - the maximum amount of connections for the database client. Default: 10
+POSTGRES_HOST - the hostname of the database server. Default: localhost
+POSTGRES_PORT - the port of the database server. Default: 5432
+POSTGRES_USER - the username to be used by the database client. Default: postgres
+POSTGRES_PASSWORD - the username to be used by the database client. Default: example
+POSTGRES_MAX_CONNECTIONS - the maximum amount of connections for the database client. Default: 10
 ```
 
 Additionally, e2e tests can be configured:

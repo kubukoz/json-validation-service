@@ -45,41 +45,53 @@ object SchemaRepository {
 
   def skunkBased[F[_]: MonadCancelThrow](
     sessionPool: Resource[F, Session[F]]
-  ): SchemaRepository[F] =
-    new SchemaRepository[F] {
+  ): F[SchemaRepository[F]] = {
+    object codecs {
 
-      private object codecs {
+      val schemaId = skunk.codec.text.text.to[SchemaId]
 
-        val schemaId = skunk.codec.text.text.to[SchemaId]
-
-        val schema: Codec[Schema] =
-          (
-            schemaId
-              *: skunk.circe.codec.json.jsonb
-          ).to[Schema]
-
-      }
-
-      def insert(schema: Schema): F[Unit] = {
-        val q = sql"""insert into schemas (id, schema) values (${codecs.schema})""".command
-
-        sessionPool
-          .evalMap(_.prepare(q))
-          .use(_.execute(schema))
-          .void
-          .adaptErr { case SqlState.UniqueViolation(_) => PersistenceError.Conflict }
-      }
-
-      def get(id: SchemaId): F[Schema] = sessionPool
-        .evalMap {
-          _.prepare(
-            sql"""select id, schema from schemas where id = ${codecs.schemaId}"""
-              .query(codecs.schema)
-          )
-        }
-        .use(_.option(id))
-        .flatMap(_.liftTo[F](PersistenceError.NotFound))
+      val schema: Codec[Schema] =
+        (
+          schemaId
+            *: skunk.circe.codec.json.jsonb
+        ).to[Schema]
 
     }
+
+    val initialize = sessionPool
+      .evalMap {
+        _.prepare(
+          sql"""create table if not exists schemas(id text primary key, schema jsonb not null)""".command
+        )
+      }
+      .use(_.execute(Void))
+
+    val instance =
+      new SchemaRepository[F] {
+
+        def insert(schema: Schema): F[Unit] = {
+          val q = sql"""insert into schemas (id, schema) values (${codecs.schema})""".command
+
+          sessionPool
+            .evalMap(_.prepare(q))
+            .use(_.execute(schema))
+            .void
+            .adaptErr { case SqlState.UniqueViolation(_) => PersistenceError.Conflict }
+        }
+
+        def get(id: SchemaId): F[Schema] = sessionPool
+          .evalMap {
+            _.prepare(
+              sql"""select id, schema from schemas where id = ${codecs.schemaId}"""
+                .query(codecs.schema)
+            )
+          }
+          .use(_.option(id))
+          .flatMap(_.liftTo[F](PersistenceError.NotFound))
+
+      }
+
+    initialize.as(instance)
+  }
 
 }

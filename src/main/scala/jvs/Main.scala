@@ -24,14 +24,15 @@ object Main extends ResourceApp.Forever {
         appConfig.persistence match {
           case PersistenceConfig.InMemory => SchemaRepository.inMemory[IO].toResource
           case PersistenceConfig.WithDatabase(db) =>
-            SkunkClient.connectionPool[IO](db).map(SchemaRepository.skunkBased(_))
+            SkunkClient.connectionPool[IO](db).evalMap(SchemaRepository.skunkBased(_))
         }
 
-      mkRepository.flatMap { implicit schemaRepository =>
-        implicit val schemaService: SchemaService[IO] = SchemaService.instance[IO]
+      mkRepository
+        .flatMap { implicit schemaRepository =>
+          implicit val schemaService: SchemaService[IO] = SchemaService.instance[IO]
 
-        HttpServer.run(HttpServer.routes[IO](API.server), appConfig.http).void
-      }
+          HttpServer.run(HttpServer.routes[IO](API.server), appConfig.http).void
+        }
     }
 
 }
