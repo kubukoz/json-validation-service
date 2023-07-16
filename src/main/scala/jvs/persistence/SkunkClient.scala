@@ -9,7 +9,7 @@ import skunk.util.Pool
 
 object SkunkClient {
 
-  def connectionPool[F[_]: Network: std.Console: Concurrent](
+  def connectionPool[F[_]: Network: std.Console: Temporal](
     config: DatabaseConfig
   ): Pool[F, Session[F]] = Session.pooled[F](
     host = config.host.toString,

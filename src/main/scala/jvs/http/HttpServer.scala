@@ -15,10 +15,14 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Server
 import org.typelevel.log4cats.Logger
 import org.http4s.Response
+import fs2.io.net.Network
 
 object HttpServer {
 
-  def run[F[_]: Async: Logger](route: HttpApp[F], config: HttpConfig): Resource[F, Server] =
+  def run[F[_]: Network: Logger: Async](
+    route: HttpApp[F],
+    config: HttpConfig,
+  ): Resource[F, Server] =
     EmberServerBuilder
       .default[F]
       .withPort(config.port)
